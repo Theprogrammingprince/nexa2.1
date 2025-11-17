@@ -212,7 +212,7 @@ const SchedulePage = () => {
                 </button>
               </div>
               <button 
-                onClick={() => setShowAddModal(true)}
+                onClick={() => setShowAddClassModal(true)}
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 flex items-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
