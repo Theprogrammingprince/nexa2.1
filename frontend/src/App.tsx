@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { ThemeProvider } from './context/ThemeContext'
 import LandingPage from './pages/LandingPage'
 import AuthPage from './pages/AuthPage'
 import Dashboard from './pages/Dashboard'
@@ -10,18 +11,20 @@ import SummaryDetailPage from './pages/SummaryDetailPage'
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/summaries" element={<SummariesPage />} />
-        <Route path="/summaries/:id" element={<SummaryDetailPage />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/summaries" element={<SummariesPage />} />
+          <Route path="/summaries/:id" element={<SummaryDetailPage />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   )
 }
 

@@ -1,31 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2023, 0, 1)); // January 2023
   const [selectedDate, setSelectedDate] = useState(7);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    const savedTheme = localStorage.getItem('theme');
-    return savedTheme === 'dark';
-  });
+  const { isDarkMode, toggleDarkMode } = useTheme();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // Listen for theme changes from settings
-  useEffect(() => {
-    const handleThemeChange = () => {
-      const savedTheme = localStorage.getItem('theme');
-      setIsDarkMode(savedTheme === 'dark');
-    };
-
-    window.addEventListener('themeChange', handleThemeChange);
-    return () => window.removeEventListener('themeChange', handleThemeChange);
-  }, []);
-
-  // Update localStorage when dark mode changes via toggle
-  const toggleDarkMode = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    localStorage.setItem('theme', newMode ? 'dark' : 'light');
-  };
 
   // Mock data
   const stats = [

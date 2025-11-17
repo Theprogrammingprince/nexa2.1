@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 interface Summary {
   id: number;
@@ -30,6 +31,7 @@ interface Lesson {
 }
 
 const SummariesPage = () => {
+  const { isDarkMode } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState('All Courses');
   const [searchQuery, setSearchQuery] = useState('');
   const [userPlan] = useState<'free' | 'pro'>('free'); // This will come from auth context later
@@ -210,9 +212,9 @@ const SummariesPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
+    <div className={`flex h-screen overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col flex-shrink-0">
+      <aside className={`w-64 flex flex-col flex-shrink-0 ${isDarkMode ? 'bg-gray-950' : 'bg-gray-900'} text-white`}>
         <div className="p-6">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
@@ -275,56 +277,59 @@ const SummariesPage = () => {
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white border-b px-4 sm:px-6 lg:px-8 py-4 flex-shrink-0">
+        <header className={`border-b px-4 sm:px-6 lg:px-8 py-4 flex-shrink-0 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Welcome to <span className="text-primary-600 font-semibold">NEXA</span></p>
+              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Welcome to <span className="text-primary-600 font-semibold">NEXA</span></p>
             </div>
-          
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-8">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary-600 text-white p-1.5 rounded-full hover:bg-primary-700">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    {/* Search Bar */}
+            <div className="flex-1 max-w-md mx-8">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`w-full pl-4 pr-10 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
+                    isDarkMode 
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
+                />
+                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary-600 text-white p-1.5 rounded-full hover:bg-primary-700">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* User Profile */}
+            <div className="flex items-center gap-3">
+              <button className={`p-2 rounded-full ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+                <svg className={`w-5 h-5 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
               </button>
-            </div>
-          </div>
-
-          {/* User Profile */}
-          <div className="flex items-center gap-3">
-            <button className="p-2 hover:bg-gray-100 rounded-full">
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
-                U
-              </div>
-              <div className="text-sm">
-                <p className="font-semibold text-gray-900">User Name</p>
-                <p className="text-xs text-gray-500">@username</p>
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                  U
+                </div>
+                <div className="text-sm">
+                  <p className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>User Name</p>
+                  <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>@username</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Main Content - Scrollable */}
-      <section className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-7xl mx-auto">
+        {/* Main Content - Scrollable */}
+        <section className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl mx-auto">
           {/* My Courses Section */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">My courses</h2>
+            <h2 className={`text-2xl font-bold mb-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>My courses</h2>
             
             {/* Category Filter */}
             <div className="mb-6 flex flex-wrap gap-3">
@@ -425,9 +430,9 @@ const SummariesPage = () => {
           {/* My Next Lessons Section */}
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Lessons List */}
-            <div className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm">
+            <div className={`lg:col-span-2 rounded-3xl p-6 shadow-sm ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">My next lessons</h3>
+                <h3 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>My next lessons</h3>
                 <a href="#" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
                   View all lessons
                 </a>
@@ -435,15 +440,15 @@ const SummariesPage = () => {
 
               <div className="space-y-4">
                 {nextLessons.map((lesson) => (
-                  <div key={lesson.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+                  <div key={lesson.id} className={`flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-1">{lesson.title}</h4>
-                      <p className="text-sm text-gray-500">{lesson.subtitle}</p>
+                      <h4 className={`font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{lesson.title}</h4>
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{lesson.subtitle}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-right">
-                        <p className="text-sm font-medium text-gray-900">{lesson.teacher}</p>
-                        <p className="text-xs text-gray-500">{lesson.duration}</p>
+                        <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{lesson.teacher}</p>
+                        <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{lesson.duration}</p>
                       </div>
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center text-white text-lg">
                         {lesson.avatar}
@@ -455,7 +460,7 @@ const SummariesPage = () => {
             </div>
 
             {/* Recommended Course Card */}
-            <div className="bg-gray-900 rounded-3xl p-6 text-white">
+            <div className={`rounded-3xl p-6 text-white ${isDarkMode ? 'bg-gray-950' : 'bg-gray-900'}`}>
               <p className="text-sm opacity-80 mb-4">New course matching your interests</p>
               
               <div className="bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full inline-block mb-4 border border-gray-700">
