@@ -9,6 +9,7 @@ import PricingPage from './pages/PricingPage'
 import SummariesPage from './pages/SummariesPage'
 import SummaryDetailPage from './pages/SummaryDetailPage'
 import SchedulePage from './pages/SchedulePage'
+import CBTPracticePage from './pages/CBTPracticePage'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/summaries" element={<SummariesPage />} />
           <Route path="/summaries/:id" element={<SummaryDetailPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/cbt-practice" element={<CBTPracticePage />} />
         </Routes>
       </Router>
     </ThemeProvider>
