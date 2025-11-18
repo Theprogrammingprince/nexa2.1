@@ -320,7 +320,6 @@ const SettingsPage = () => {
                   onClick={handleSaveProfile}
                   disabled={loading}
                   className="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-md"
-                  style={{ color: '#ffffff' }}
                 >
                   <Save size={20} />
                   {loading ? 'Saving...' : 'Save Profile Changes'}
@@ -377,7 +376,6 @@ const SettingsPage = () => {
                   onClick={handleSavePassword}
                   disabled={loading}
                   className="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-md flex items-center gap-2"
-                  style={{ color: '#ffffff' }}
                 >
                   <Save size={20} />
                   {loading ? 'Updating...' : 'Update Password'}
@@ -420,7 +418,6 @@ const SettingsPage = () => {
                 <button
                   onClick={handleSaveNotifications}
                   className="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold shadow-md flex items-center gap-2"
-                  style={{ color: '#ffffff' }}
                 >
                   <Save size={20} />
                   Save Notification Preferences
@@ -481,7 +478,6 @@ const SettingsPage = () => {
                 <button
                   onClick={handleSavePreferences}
                   className="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold shadow-md flex items-center gap-2"
-                  style={{ color: '#ffffff' }}
                 >
                   <Save size={20} />
                   Save General Preferences

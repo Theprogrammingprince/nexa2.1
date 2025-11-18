@@ -67,8 +67,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 .eq('id', userId)
                 .single();
 
-            if (error) throw error;
-            setProfile(data);
+            if (error) {
+                // If profile doesn't exist, create it
+                if (error.code === 'PGRST116') {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (user) {
+                        const { data: newProfile, error: insertError } = await supabase
+                            .from('profiles')
+                            .insert({
+                                id: user.id,
+                                email: user.email || '',
+                                full_name: user.user_metadata?.fullName || user.email?.split('@')[0] || 'User',
+                                role: 'student',
+                            })
+                            .select()
+                            .single();
+                        
+                        if (!insertError && newProfile) {
+                            setProfile(newProfile);
+                            
+                            // Create welcome notification for existing user
+                            await supabase.from('notifications').insert({
+                                user_id: user.id,
+                                type: 'announcement',
+                                title: 'Welcome to NEXA! 🎉',
+                                message: `Hi! Welcome to NOUN Exam Experience Assistant. We're excited to help you excel in your studies.`,
+                                priority: 'high',
+                                read: false,
+                            });
+                        }
+                    }
+                } else {
+                    throw error;
+                }
+            } else {
+                setProfile(data);
+            }
         } catch (error) {
             console.error('Error fetching profile:', error);
         } finally {

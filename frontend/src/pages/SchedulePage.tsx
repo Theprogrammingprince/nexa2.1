@@ -156,6 +156,8 @@ const SchedulePage = () => {
           user_id: user.id,
           subject: studyForm.subject,
           duration: parseInt(studyForm.duration),
+          scheduled_date: studyForm.date,
+          scheduled_time: studyForm.time,
           scheduled_at: sessionDateTime.toISOString(),
           goals: studyForm.goals,
         });
