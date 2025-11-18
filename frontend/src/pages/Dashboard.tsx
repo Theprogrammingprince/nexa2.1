@@ -13,7 +13,6 @@ const Dashboard = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [loading] = useState(false);
 
   // Fetch notifications from database
   useEffect(() => {
