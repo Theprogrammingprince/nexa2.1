@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Backend infrastructure for NEXA - NOUN Exam Experience Assistant",
   "scripts": {
-    "deploy": "powershell -ExecutionPolicy Bypass -File ./deploy.ps1",
+    "deploy": "node deploy.mjs",
+    "deploy:ps": "powershell -ExecutionPolicy Bypass -File ./deploy.ps1",
     "deploy:unix": "bash ./deploy.sh",
     "link": "supabase link",
     "migrate": "supabase db push",
