@@ -12,7 +12,7 @@ export const ROUTES = {
     ADMIN: '/admin',
     SUMMARIES: '/summaries',
     SUMMARY_DETAIL: '/summaries/:id',
-    CBT_PRACTICE: '/cbt-practice',
+    CBT_PRACTICE: '/cbt',
     SCHEDULE: '/schedule',
     SETTINGS: '/settings',
     PRICING: '/pricing',

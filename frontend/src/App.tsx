@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -34,6 +34,7 @@ function App() {
             <Route path="/summaries/:id" element={<ProtectedRoute><SummaryDetailPage /></ProtectedRoute>} />
             <Route path="/schedule" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
             <Route path="/cbt" element={<ProtectedRoute><CBTPracticePage /></ProtectedRoute>} />
+            <Route path="/cbt-practice" element={<Navigate to="/cbt" replace />} />
             <Route path="/cbt/instruction/:courseId" element={<ProtectedRoute><CBTInstructionPage /></ProtectedRoute>} />
             <Route path="/cbt/test/:courseId" element={<ProtectedRoute><CBTTestPage /></ProtectedRoute>} />
             

@@ -169,7 +169,7 @@ const SummaryDetailPage = () => {
                 Download PDF
               </button>
               <a
-                href="/cbt-practice"
+                href="/cbt"
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
               >
                 Take CBT Practice
@@ -261,7 +261,7 @@ const SummaryDetailPage = () => {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Great Job!</h3>
                     <p className="text-gray-600 mb-4">You've completed this summary. Ready to test your knowledge?</p>
                     <a
-                      href="/cbt-practice"
+                      href="/cbt"
                       className="inline-block px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold"
                     >
                       Take CBT Practice Test

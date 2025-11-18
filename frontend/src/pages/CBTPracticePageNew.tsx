@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
 import supabase from '../supabaseClient';
 import toast, { Toaster } from 'react-hot-toast';
 import { BookOpen, Clock, FileText, Search, Filter } from 'lucide-react';
@@ -19,7 +18,6 @@ interface Course {
 
 const CBTPracticePage = () => {
   const { isDarkMode } = useTheme();
-  const { user } = useAuth();
   const navigate = useNavigate();
   
   const [courses, setCourses] = useState<Course[]>([]);
