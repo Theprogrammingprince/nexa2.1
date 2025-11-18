@@ -11,7 +11,9 @@ import PricingPage from './pages/PricingPage'
 import SummariesPage from './pages/SummariesPage'
 import SummaryDetailPage from './pages/SummaryDetailPage'
 import SchedulePage from './pages/SchedulePage'
-import CBTPracticePage from './pages/CBTPracticePage'
+import CBTPracticePage from './pages/CBTPracticePageNew'
+import CBTInstructionPage from './pages/CBTInstructionPage'
+import CBTTestPage from './pages/CBTTestPage'
 import AdminAddSummary from './pages/AdminAddSummary'
 import AdminAddQuestions from './pages/AdminAddQuestions'
 
@@ -31,7 +33,9 @@ function App() {
             <Route path="/summaries" element={<ProtectedRoute><SummariesPage /></ProtectedRoute>} />
             <Route path="/summaries/:id" element={<ProtectedRoute><SummaryDetailPage /></ProtectedRoute>} />
             <Route path="/schedule" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
-            <Route path="/cbt-practice" element={<ProtectedRoute><CBTPracticePage /></ProtectedRoute>} />
+            <Route path="/cbt" element={<ProtectedRoute><CBTPracticePage /></ProtectedRoute>} />
+            <Route path="/cbt/instruction/:courseId" element={<ProtectedRoute><CBTInstructionPage /></ProtectedRoute>} />
+            <Route path="/cbt/test/:courseId" element={<ProtectedRoute><CBTTestPage /></ProtectedRoute>} />
             
             {/* Admin Only Routes */}
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
