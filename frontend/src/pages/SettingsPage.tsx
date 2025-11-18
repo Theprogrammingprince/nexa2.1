@@ -3,6 +3,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../supabaseClient';
 import toast, { Toaster } from 'react-hot-toast';
+import DashboardLayout from '../components/DashboardLayout';
 import { 
   User, 
   Lock, 
@@ -155,74 +156,53 @@ const SettingsPage = () => {
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} />
-      <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col">
-        <div className="p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">N</span>
-            </div>
-            <span className="text-xl font-bold">NEXA</span>
-          </div>
-        </div>
-        <nav className="flex-1 px-4">
-          <a href="/dashboard" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
-            <span>← Back to Dashboard</span>
-          </a>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
+      <DashboardLayout currentPage="/settings">
 
           {/* Tabs */}
-          <div className="flex gap-4 mb-8 border-b">
+          <div className={`flex flex-wrap gap-2 sm:gap-4 mb-8 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <button
               onClick={() => setActiveTab('profile')}
-              className={`pb-4 px-4 font-medium transition-colors ${
+              className={`pb-4 px-3 sm:px-4 font-medium transition-colors text-sm sm:text-base ${
                 activeTab === 'profile'
                   ? 'border-b-2 border-primary-600 text-primary-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <User className="inline mr-2" size={18} />
-              Profile
+              <User className="inline mr-1 sm:mr-2" size={18} />
+              <span className="hidden sm:inline">Profile</span>
             </button>
             <button
               onClick={() => setActiveTab('security')}
-              className={`pb-4 px-4 font-medium transition-colors ${
+              className={`pb-4 px-3 sm:px-4 font-medium transition-colors text-sm sm:text-base ${
                 activeTab === 'security'
                   ? 'border-b-2 border-primary-600 text-primary-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Lock className="inline mr-2" size={18} />
-              Security
+              <Lock className="inline mr-1 sm:mr-2" size={18} />
+              <span className="hidden sm:inline">Security</span>
             </button>
             <button
               onClick={() => setActiveTab('notifications')}
-              className={`pb-4 px-4 font-medium transition-colors ${
+              className={`pb-4 px-3 sm:px-4 font-medium transition-colors text-sm sm:text-base ${
                 activeTab === 'notifications'
                   ? 'border-b-2 border-primary-600 text-primary-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Bell className="inline mr-2" size={18} />
-              Notifications
+              <Bell className="inline mr-1 sm:mr-2" size={18} />
+              <span className="hidden sm:inline">Notifications</span>
             </button>
             <button
               onClick={() => setActiveTab('preferences')}
-              className={`pb-4 px-4 font-medium transition-colors ${
+              className={`pb-4 px-3 sm:px-4 font-medium transition-colors text-sm sm:text-base ${
                 activeTab === 'preferences'
                   ? 'border-b-2 border-primary-600 text-primary-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Globe className="inline mr-2" size={18} />
-              Preferences
+              <Globe className="inline mr-1 sm:mr-2" size={18} />
+              <span className="hidden sm:inline">Preferences</span>
             </button>
           </div>
 
@@ -485,9 +465,7 @@ const SettingsPage = () => {
               </div>
             </div>
           )}
-        </div>
-      </main>
-      </div>
+      </DashboardLayout>
     </>
   );
 };
