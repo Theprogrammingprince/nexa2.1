@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../supabaseClient';
@@ -13,7 +13,6 @@ const SchedulePage = () => {
   const [showAddAssignmentModal, setShowAddAssignmentModal] = useState(false);
   const [showStudySessionModal, setShowStudySessionModal] = useState(false);
   const [showReminderModal, setShowReminderModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
   // Form states for Add Class
   const [classForm, setClassForm] = useState({

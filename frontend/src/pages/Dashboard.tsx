@@ -5,15 +5,15 @@ import supabase from '../supabaseClient';
 import toast, { Toaster } from 'react-hot-toast';
 
 const Dashboard = () => {
-  const [currentDate, setCurrentDate] = useState(new Date()); // Current date
-  const [selectedDate, setSelectedDate] = useState(new Date().getDate());
+  const [currentDate] = useState(new Date()); // Current date
+  const [selectedDate] = useState(new Date().getDate());
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { user, profile, signOut, isAdmin } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   // Fetch notifications from database
   useEffect(() => {

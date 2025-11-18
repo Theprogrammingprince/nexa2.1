@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 const SettingsPage = () => {
-  const { isDarkMode, toggleDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
   const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);

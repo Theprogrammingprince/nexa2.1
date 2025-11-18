@@ -17,7 +17,6 @@ interface Course {
 
 const CBTInstructionPage = () => {
   const { isDarkMode } = useTheme();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const { courseId } = useParams();
   
