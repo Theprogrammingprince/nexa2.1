@@ -116,6 +116,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 console.error('Error creating profile:', profileError);
                 // Don't throw error here as auth user is already created
             }
+            
+            // Create welcome notification
+            await supabase
+                .from('notifications')
+                .insert({
+                    user_id: data.user.id,
+                    type: 'announcement',
+                    title: 'Welcome to NEXA! 🎉',
+                    message: `Hi ${fullName}! Welcome to NOUN Exam Experience Assistant. We're excited to help you excel in your studies. Start by exploring summaries, taking practice tests, and scheduling your study sessions.`,
+                    priority: 'high',
+                    read: false,
+                });
         }
         
         return data;

@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import supabase from '../supabaseClient';
+import toast, { Toaster } from 'react-hot-toast';
 import Modal from '../components/ScheduleModals';
 
 const SchedulePage = () => {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
   const [viewMode, setViewMode] = useState<'week' | 'list' | 'month'>('week');
   const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [showAddAssignmentModal, setShowAddAssignmentModal] = useState(false);
@@ -79,41 +83,132 @@ const SchedulePage = () => {
     { id: 2, title: 'Database Final', course: 'CSC 401', date: 'Feb 10, 2024', time: '2:00 PM', location: 'Hall B' },
   ];
 
-  // Handler functions (will connect to backend later)
-  const handleAddClass = () => {
-    console.log('Adding class:', classForm);
-    // TODO: Backend API call - POST /api/schedule/classes
-    alert('Class added successfully! (Backend integration pending)');
-    setShowAddClassModal(false);
-    setClassForm({ title: '', instructor: '', location: '', day: '0', startTime: '', endTime: '', color: 'bg-blue-500' });
+  // Handler functions with backend integration
+  const handleAddClass = async () => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('schedule_classes')
+        .insert({
+          user_id: user.id,
+          title: classForm.title,
+          instructor: classForm.instructor,
+          location: classForm.location,
+          day_of_week: parseInt(classForm.day),
+          start_time: classForm.startTime,
+          end_time: classForm.endTime,
+          color: classForm.color,
+        });
+
+      if (error) throw error;
+      toast.success('Class added successfully!');
+      setShowAddClassModal(false);
+      setClassForm({ title: '', instructor: '', location: '', day: '0', startTime: '', endTime: '', color: 'bg-blue-500' });
+    } catch (error: any) {
+      toast.error('Failed to add class: ' + error.message);
+    }
   };
 
-  const handleAddAssignment = () => {
-    console.log('Adding assignment:', assignmentForm);
-    // TODO: Backend API call - POST /api/assignments
-    alert('Assignment added successfully! (Backend integration pending)');
-    setShowAddAssignmentModal(false);
-    setAssignmentForm({ title: '', course: '', dueDate: '', priority: 'medium', description: '' });
+  const handleAddAssignment = async () => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('assignments')
+        .insert({
+          user_id: user.id,
+          title: assignmentForm.title,
+          course_code: assignmentForm.course,
+          due_date: assignmentForm.dueDate,
+          priority: assignmentForm.priority,
+          description: assignmentForm.description,
+        });
+
+      if (error) throw error;
+      
+      // Create notification for assignment
+      await supabase.from('notifications').insert({
+        user_id: user.id,
+        type: 'assignment',
+        title: 'New Assignment Added',
+        message: `${assignmentForm.title} is due on ${new Date(assignmentForm.dueDate).toLocaleDateString()}`,
+        priority: assignmentForm.priority,
+      });
+      
+      toast.success('Assignment added successfully!');
+      setShowAddAssignmentModal(false);
+      setAssignmentForm({ title: '', course: '', dueDate: '', priority: 'medium', description: '' });
+    } catch (error: any) {
+      toast.error('Failed to add assignment: ' + error.message);
+    }
   };
 
-  const handleScheduleStudySession = () => {
-    console.log('Scheduling study session:', studyForm);
-    // TODO: Backend API call - POST /api/study-sessions
-    alert('Study session scheduled! (Backend integration pending)');
-    setShowStudySessionModal(false);
-    setStudyForm({ subject: '', duration: '60', date: '', time: '', goals: '' });
+  const handleScheduleStudySession = async () => {
+    if (!user) return;
+    
+    try {
+      const sessionDateTime = new Date(`${studyForm.date}T${studyForm.time}`);
+      
+      const { error } = await supabase
+        .from('study_sessions')
+        .insert({
+          user_id: user.id,
+          subject: studyForm.subject,
+          duration: parseInt(studyForm.duration),
+          scheduled_at: sessionDateTime.toISOString(),
+          goals: studyForm.goals,
+        });
+
+      if (error) throw error;
+      
+      // Create notification for study session
+      await supabase.from('notifications').insert({
+        user_id: user.id,
+        type: 'system',
+        title: 'Study Session Scheduled',
+        message: `${studyForm.subject} study session on ${new Date(sessionDateTime).toLocaleString()}`,
+        priority: 'medium',
+      });
+      
+      toast.success('Study session scheduled successfully!');
+      setShowStudySessionModal(false);
+      setStudyForm({ subject: '', duration: '60', date: '', time: '', goals: '' });
+    } catch (error: any) {
+      toast.error('Failed to schedule study session: ' + error.message);
+    }
   };
 
-  const handleSetReminder = () => {
-    console.log('Setting reminder:', reminderForm);
-    // TODO: Backend API call - POST /api/reminders
-    alert('Reminder set successfully! (Backend integration pending)');
-    setShowReminderModal(false);
-    setReminderForm({ title: '', description: '', date: '', time: '', type: 'assignment' });
+  const handleSetReminder = async () => {
+    if (!user) return;
+    
+    try {
+      const reminderDateTime = new Date(`${reminderForm.date}T${reminderForm.time}`);
+      
+      const { error } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: user.id,
+          type: reminderForm.type as any,
+          title: reminderForm.title,
+          message: reminderForm.description,
+          scheduled_for: reminderDateTime.toISOString(),
+          priority: 'medium',
+        });
+
+      if (error) throw error;
+      toast.success('Reminder set successfully!');
+      setShowReminderModal(false);
+      setReminderForm({ title: '', description: '', date: '', time: '', type: 'assignment' });
+    } catch (error: any) {
+      toast.error('Failed to set reminder: ' + error.message);
+    }
   };
 
   return (
-    <div className={`flex h-screen overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
+    <>
+      <Toaster position="top-center" reverseOrder={false} />
+      <div className={`flex h-screen overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-white'}`}>
       {/* Sidebar */}
       <aside className={`w-64 flex flex-col flex-shrink-0 ${isDarkMode ? 'bg-gray-950' : 'bg-gray-900'} text-white`}>
         <div className="p-6">
@@ -758,7 +853,8 @@ const SchedulePage = () => {
           </div>
         </div>
       </Modal>
-    </div>
+      </div>
+    </>
   );
 };
 

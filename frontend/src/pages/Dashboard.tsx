@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import supabase from '../supabaseClient';
+import toast, { Toaster } from 'react-hot-toast';
 
 const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date()); // Current date
@@ -10,46 +12,62 @@ const Dashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock notifications data
-  const notifications = [
-    {
-      id: 1,
-      type: 'assignment',
-      title: 'New Assignment Posted',
-      message: 'Data Structures Assignment is due tomorrow',
-      time: '5 minutes ago',
-      read: false,
-      icon: 'clipboard'
-    },
-    {
-      id: 2,
-      type: 'exam',
-      title: 'Upcoming Exam',
-      message: 'Database Systems exam scheduled for Jan 25',
-      time: '1 hour ago',
-      read: false,
-      icon: 'calendar'
-    },
-    {
-      id: 3,
-      type: 'grade',
-      title: 'Grade Posted',
-      message: 'Your score for Web Development quiz: 88%',
-      time: '3 hours ago',
-      read: true,
-      icon: 'star'
-    },
-    {
-      id: 4,
-      type: 'announcement',
-      title: 'Course Update',
-      message: 'New study materials available for CSC 301',
-      time: '1 day ago',
-      read: true,
-      icon: 'bell'
-    },
-  ];
+  // Fetch notifications from database
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+    }
+  }, [user]);
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setNotifications(data || []);
+    } catch (error: any) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', notificationId);
+
+      if (error) throw error;
+      fetchNotifications();
+    } catch (error: any) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId);
+
+      if (error) throw error;
+      toast.success('Notification deleted');
+      fetchNotifications();
+    } catch (error: any) {
+      toast.error('Failed to delete notification');
+    }
+  };
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -127,7 +145,9 @@ const Dashboard = () => {
   const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
   return (
-    <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <>
+      <Toaster position="top-center" reverseOrder={false} />
+      <div className={`flex h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
@@ -301,9 +321,10 @@ const Dashboard = () => {
                         notifications.map((notification) => (
                           <div 
                             key={notification.id}
-                            className={`px-4 py-3 border-b transition-colors ${
+                            onClick={() => !notification.read && markAsRead(notification.id)}
+                            className={`px-4 py-3 border-b transition-colors cursor-pointer relative group ${
                               isDarkMode ? 'border-gray-700 hover:bg-gray-750' : 'border-gray-100 hover:bg-gray-50'
-                            } ${!notification.read ? (isDarkMode ? 'bg-gray-750' : 'bg-blue-50') : ''}`}
+                            } ${!notification.read ? (isDarkMode ? 'bg-blue-900/20 border-l-4 border-l-primary-500' : 'bg-blue-50 border-l-4 border-l-primary-600') : ''}`}
                           >
                             <div className="flex gap-3">
                               {/* Icon */}
@@ -338,18 +359,32 @@ const Dashboard = () => {
                               {/* Content */}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-start justify-between gap-2">
-                                  <p className={`font-semibold text-sm ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                                    {notification.title}
-                                  </p>
-                                  {!notification.read && (
-                                    <span className="w-2 h-2 bg-primary-600 rounded-full flex-shrink-0 mt-1"></span>
-                                  )}
+                                  <div className="flex-1">
+                                    <p className={`font-semibold text-sm ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+                                      {notification.title}
+                                      {!notification.read && (
+                                        <span className="ml-2 px-2 py-0.5 bg-primary-600 text-white text-xs rounded-full">New</span>
+                                      )}
+                                    </p>
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteNotification(notification.id);
+                                    }}
+                                    className={`opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-100 ${isDarkMode ? 'hover:bg-red-900/30' : ''}`}
+                                    title="Delete notification"
+                                  >
+                                    <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
                                 </div>
                                 <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                   {notification.message}
                                 </p>
                                 <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                  {notification.time}
+                                  {new Date(notification.created_at).toLocaleString()}
                                 </p>
                               </div>
                             </div>
@@ -719,7 +754,8 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 };
 

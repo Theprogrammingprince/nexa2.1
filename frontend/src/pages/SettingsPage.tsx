@@ -315,18 +315,21 @@ const SettingsPage = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4 mt-8">
+              <div className="flex gap-4 mt-8 pt-6 border-t border-gray-200">
                 <button
                   onClick={handleSaveProfile}
                   disabled={loading}
-                  className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-md"
                   style={{ color: '#ffffff' }}
                 >
-                  <Save size={18} />
-                  {loading ? 'Saving...' : 'Save Changes'}
+                  <Save size={20} />
+                  {loading ? 'Saving...' : 'Save Profile Changes'}
                 </button>
-                <button className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
-                  <X size={18} />
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 font-semibold"
+                >
+                  <X size={20} />
                   Cancel
                 </button>
               </div>
@@ -369,14 +372,17 @@ const SettingsPage = () => {
                   />
                 </div>
               </div>
-              <button
-                onClick={handleSavePassword}
-                disabled={loading}
-                className="mt-6 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ color: '#ffffff' }}
-              >
-                {loading ? 'Updating...' : 'Update Password'}
-              </button>
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <button
+                  onClick={handleSavePassword}
+                  disabled={loading}
+                  className="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-md flex items-center gap-2"
+                  style={{ color: '#ffffff' }}
+                >
+                  <Save size={20} />
+                  {loading ? 'Updating...' : 'Update Password'}
+                </button>
+              </div>
             </div>
           )}
 
@@ -410,13 +416,16 @@ const SettingsPage = () => {
                   </div>
                 ))}
               </div>
-              <button
-                onClick={handleSaveNotifications}
-                className="mt-6 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                style={{ color: '#ffffff' }}
-              >
-                Save Preferences
-              </button>
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <button
+                  onClick={handleSaveNotifications}
+                  className="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold shadow-md flex items-center gap-2"
+                  style={{ color: '#ffffff' }}
+                >
+                  <Save size={20} />
+                  Save Notification Preferences
+                </button>
+              </div>
             </div>
           )}
 
@@ -468,13 +477,16 @@ const SettingsPage = () => {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={handleSavePreferences}
-                className="mt-6 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                style={{ color: '#ffffff' }}
-              >
-                Save Preferences
-              </button>
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <button
+                  onClick={handleSavePreferences}
+                  className="px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold shadow-md flex items-center gap-2"
+                  style={{ color: '#ffffff' }}
+                >
+                  <Save size={20} />
+                  Save General Preferences
+                </button>
+              </div>
             </div>
           )}
         </div>
