@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { dashboardAPI } from '../services/api';
-import { TrendingUp, TrendingDown, BookOpen, Award, Clock, Target, Calendar, BarChart3 } from 'lucide-react';
+import { TrendingUp, TrendingDown, BookOpen, Award, Clock, Target, BarChart3 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface DashboardStatsData {
@@ -32,7 +31,7 @@ interface DashboardStatsData {
 
 const DashboardStats = () => {
   const { isDarkMode } = useTheme();
-  const [stats, setStats] = useState<DashboardStatsData | null>(null);
+  const [stats] = useState<DashboardStatsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,12 +43,13 @@ const DashboardStats = () => {
 
   const fetchStats = async () => {
     try {
-      const data = await dashboardAPI.getStats();
-      setStats(data);
+      // TODO: This component is not currently used - needs userId parameter
+      // const data = await dashboardAPI.getStats(userId);
+      // setStats(data);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
       toast.error('Failed to load dashboard stats');
-    } finally {
       setLoading(false);
     }
   };

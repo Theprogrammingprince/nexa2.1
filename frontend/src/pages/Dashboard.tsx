@@ -15,17 +15,23 @@ const Dashboard = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [dashboardStats, setDashboardStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
   // Fetch notifications and stats from database
   useEffect(() => {
     if (user) {
-      fetchNotifications();
-      fetchDashboardStats();
+      // Small delay to ensure session is fully loaded
+      const timer = setTimeout(() => {
+        fetchNotifications();
+        fetchDashboardStats();
+      }, 100);
       
       // Refresh stats every 30 seconds
       const interval = setInterval(fetchDashboardStats, 30000);
-      return () => clearInterval(interval);
+      
+      return () => {
+        clearTimeout(timer);
+        clearInterval(interval);
+      };
     }
   }, [user]);
 
@@ -48,26 +54,20 @@ const Dashboard = () => {
   };
 
   const fetchDashboardStats = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
     
     try {
-      const data = await dashboardAPI.getStats();
+      const data = await dashboardAPI.getStats(user.id);
+      
       if (data.error) {
-        console.error('API Error:', data.error);
+        console.error('Dashboard stats error:', data.error);
         return;
       }
+      
       setDashboardStats(data);
     } catch (error: any) {
       console.error('Error fetching dashboard stats:', error);
-      // Don't show error toast for 401 - user might not be fully logged in yet
-      if (error.status !== 401) {
-        toast.error('Failed to load dashboard stats');
-      }
-    } finally {
-      setLoading(false);
+      toast.error('Failed to load dashboard stats');
     }
   };
 

@@ -53,7 +53,7 @@ serve(async (req) => {
         // Build query for questions (using new schema with question_text, option_a, etc.)
         let query = supabase
             .from('questions')
-            .select('id, question_text, question_type, option_a, option_b, option_c, option_d, explanation')
+            .select('id, question_text, question_type, option_a, option_b, option_c, option_d, correct_answer, explanation')
             .eq('course_id', courseId);
 
         // Apply limit if provided
@@ -65,8 +65,16 @@ serve(async (req) => {
 
         if (questionsError) throw questionsError;
 
-        // Shuffle questions for randomization
-        const shuffledQuestions = questions?.sort(() => Math.random() - 0.5) || [];
+        console.log(`📚 Found ${questions?.length || 0} questions for course`);
+
+        // Shuffle questions using Fisher-Yates algorithm for better randomization
+        const shuffledQuestions = questions ? [...questions] : [];
+        for (let i = shuffledQuestions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
+        }
+
+        console.log(`🔀 Shuffled and returning ${shuffledQuestions.length} questions`);
 
         return new Response(
             JSON.stringify({ 

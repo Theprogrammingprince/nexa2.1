@@ -4,10 +4,17 @@ const FUNCTIONS_URL = import.meta.env.VITE_SUPABASE_URL + '/functions/v1';
 
 // Helper function to get auth headers
 const getAuthHeaders = async () => {
+    // Get the current session (Supabase handles auto-refresh)
     const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session?.access_token) {
+        throw new Error('No active session');
+    }
+    
     return {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token || ''}`,
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
     };
 };
 
@@ -346,9 +353,16 @@ export const adminAPI = {
 
 // Dashboard Stats API
 export const dashboardAPI = {
-    getStats: async () => {
-        const response = await fetch(`${FUNCTIONS_URL}/get-user-stats`, {
-            headers: await getAuthHeaders(),
+    getStats: async (userId: string) => {
+        const response = await fetch(`${FUNCTIONS_URL}/get-user-stats?user_id=${userId}`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+        return response.json();
+    },
+
+    getPerformanceChart: async (userId: string, period: string = '7') => {
+        const response = await fetch(`${FUNCTIONS_URL}/get-performance-chart?user_id=${userId}&period=${period}`, {
+            headers: { 'Content-Type': 'application/json' },
         });
         return response.json();
     },

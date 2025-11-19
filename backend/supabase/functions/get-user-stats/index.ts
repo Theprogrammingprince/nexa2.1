@@ -12,29 +12,29 @@ serve(async (req) => {
     }
 
     try {
-        const supabase = createClient(
-            Deno.env.get("SUPABASE_URL") ?? '',
-            Deno.env.get("SUPABASE_ANON_KEY") ?? '',
-            {
-                global: {
-                    headers: { Authorization: req.headers.get('Authorization')! },
-                },
-            }
-        );
-
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
+        // Get user_id from query parameter
+        const url = new URL(req.url);
+        const userId = url.searchParams.get('user_id');
+        
+        if (!userId) {
             return new Response(
-                JSON.stringify({ error: 'Unauthorized' }),
-                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                JSON.stringify({ error: 'user_id parameter is required' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
         }
+
+        console.log('📊 Fetching stats for user:', userId);
+        
+        const supabase = createClient(
+            Deno.env.get("SUPABASE_URL") ?? '',
+            Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? '',
+        );
 
         // Get all test submissions for stats calculation
         const { data: allSubmissions, error: submissionsError } = await supabase
             .from('test_submissions')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('user_id', userId)
             .order('created_at', { ascending: false });
 
         if (submissionsError) throw submissionsError;
@@ -107,7 +107,7 @@ serve(async (req) => {
                 created_at,
                 course_id
             `)
-            .eq('user_id', user.id)
+            .eq('user_id', userId)
             .order('created_at', { ascending: false })
             .limit(5);
 

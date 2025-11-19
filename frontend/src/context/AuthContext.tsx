@@ -33,15 +33,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check active session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                fetchProfile(session.user.id);
-            } else {
+        // Check active session and validate it
+        const initAuth = async () => {
+            try {
+                // First try to get user (validates token)
+                const { data: { user }, error } = await supabase.auth.getUser();
+                
+                if (error || !user) {
+                    // Token invalid, try to refresh
+                    const { data: { session }, error: refreshError } = await supabase.auth.refreshSession();
+                    
+                    if (refreshError || !session?.user) {
+                        // No valid session
+                        setUser(null);
+                        setLoading(false);
+                        return;
+                    }
+                    
+                    setUser(session.user);
+                    fetchProfile(session.user.id);
+                } else {
+                    // Valid user
+                    setUser(user);
+                    fetchProfile(user.id);
+                }
+            } catch (error) {
+                console.error('Auth initialization error:', error);
+                setUser(null);
                 setLoading(false);
             }
-        });
+        };
+        
+        initAuth();
 
         // Listen for auth changes
         const {

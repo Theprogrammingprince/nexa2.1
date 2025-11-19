@@ -10,10 +10,11 @@ import { Clock, ChevronLeft, ChevronRight, Flag, CheckCircle, XCircle, AlertTria
 interface Question {
   id: string;
   question_text: string;
-  option_a: string;
-  option_b: string;
-  option_c: string;
-  option_d: string;
+  question_type: 'multiple_choice' | 'fill_in_blank' | 'true_false';
+  option_a: string | null;
+  option_b: string | null;
+  option_c: string | null;
+  option_d: string | null;
   correct_answer: string;
   explanation?: string;
 }
