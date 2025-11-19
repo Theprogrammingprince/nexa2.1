@@ -24,6 +24,7 @@ interface ResultsState {
   questions: Question[];
   userAnswers: { [key: number]: string };
   course: {
+    id: string;
     code: string;
     title: string;
   };
@@ -141,7 +142,7 @@ Review the course material related to this topic to strengthen your understandin
                 Back to CBT
               </button>
               <button
-                onClick={() => navigate(`/cbt/instruction/${course.code}`)}
+                onClick={() => navigate(`/cbt/instruction/${course.id}`)}
                 className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
               >
                 <RotateCcw size={20} />

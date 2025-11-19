@@ -50,37 +50,45 @@ serve(async (req) => {
             );
         }
 
-        // Build query for questions (using new schema with question_text, option_a, etc.)
-        let query = supabase
+        // First, get ALL questions for the course to enable proper randomization
+        const { data: allQuestions, error: questionsError } = await supabase
             .from('questions')
             .select('id, question_text, question_type, option_a, option_b, option_c, option_d, correct_answer, explanation')
             .eq('course_id', courseId);
 
-        // Apply limit if provided
-        if (limit) {
-            query = query.limit(parseInt(limit));
-        }
-
-        const { data: questions, error: questionsError } = await query;
-
         if (questionsError) throw questionsError;
 
-        console.log(`📚 Found ${questions?.length || 0} questions for course`);
+        console.log(`📚 Found ${allQuestions?.length || 0} total questions for course`);
 
-        // Shuffle questions using Fisher-Yates algorithm for better randomization
-        const shuffledQuestions = questions ? [...questions] : [];
+        if (!allQuestions || allQuestions.length === 0) {
+            return new Response(
+                JSON.stringify({ 
+                    course, 
+                    questions: [],
+                    total_count: 0
+                }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
+
+        // Shuffle ALL questions first using Fisher-Yates algorithm
+        const shuffledQuestions = [...allQuestions];
         for (let i = shuffledQuestions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
         }
 
-        console.log(`🔀 Shuffled and returning ${shuffledQuestions.length} questions`);
+        // Then slice to get the requested number (this ensures different questions each time)
+        const limitNum = limit ? parseInt(limit) : shuffledQuestions.length;
+        const selectedQuestions = shuffledQuestions.slice(0, Math.min(limitNum, shuffledQuestions.length));
+
+        console.log(`🔀 Shuffled ${shuffledQuestions.length} questions and returning ${selectedQuestions.length}`);
 
         return new Response(
             JSON.stringify({ 
                 course, 
-                questions: shuffledQuestions,
-                total_count: questions?.length || 0
+                questions: selectedQuestions,
+                total_count: allQuestions.length
             }),
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

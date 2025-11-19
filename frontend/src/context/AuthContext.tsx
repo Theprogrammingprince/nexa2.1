@@ -174,15 +174,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 // Don't throw error here as auth user is already created
             }
             
-            // Create welcome notification
+            // Create welcome notification with instructions
             await supabase
                 .from('notifications')
                 .insert({
                     user_id: data.user.id,
                     type: 'announcement',
-                    title: 'Welcome to NEXA! 🎉',
-                    message: `Hi ${fullName}! Welcome to NOUN Exam Experience Assistant. We're excited to help you excel in your studies. Start by exploring summaries, taking practice tests, and scheduling your study sessions.`,
-                    priority: 'high',
+                    title: '🎉 Welcome to NEXA!',
+                    message: `Hi ${fullName}! Welcome to NOUN Exam Experience Assistant (NEXA). Here's how to get started:\n\n📚 **Summaries**: Browse AI-generated course summaries to quickly grasp key concepts.\n\n📝 **Practice Tests**: Take CBT-style tests to prepare for exams. Questions are shuffled each time!\n\n📅 **Schedule**: Plan your study sessions and track your progress.\n\n📊 **Dashboard**: Monitor your performance and see your improvement over time.\n\nGood luck with your studies! 🚀`,
                     read: false,
                 });
         }
