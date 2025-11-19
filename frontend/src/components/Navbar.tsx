@@ -10,48 +10,60 @@ const Navbar = () => {
     { name: 'The Institute', href: '#about' },
     { name: 'Academics', href: '#' },
     { name: 'Services', href: '#' },
-    { name: 'Career', href: '#' },
+    { name: 'Contact', href: '#' },
     { name: 'Happenings', href: '#' },
   ];
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
+    <nav className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center">
-              <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">N</span>
+            <div className="flex-shrink-0 flex items-center gap-3">
+              <div className="w-11 h-11 bg-gradient-to-br from-teal-600 to-cyan-600 rounded-lg flex items-center justify-center shadow-md">
+                <span className="text-white font-bold text-xl">N</span>
               </div>
-              <span className="ml-2 text-xl font-bold text-gray-900">Nexa</span>
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold text-gray-900">NEXA</h1>
+                <p className="text-xs text-gray-500 -mt-1">Exam Success Platform</p>
+              </div>
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-1">
             {navLinks.map((link) => (
               <a
                 key={link.name}
                 href={link.href}
-                className="text-gray-700 hover:text-primary-600 transition-colors duration-200 text-sm font-medium"
+                className="nav-link text-gray-700 hover:text-teal-600 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium hover:bg-gray-50"
               >
                 {link.name}
               </a>
             ))}
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="hidden md:flex items-center gap-3">
             <Link
               to="/auth"
-              className="bg-primary-600 hover:bg-primary-700 px-6 py-2 rounded-full font-medium transition-colors duration-200 shadow-md hover:shadow-lg text-white"
+              className="text-gray-700 hover:text-gray-900 px-5 py-2 rounded-lg font-medium text-sm transition-all duration-200 border border-gray-200 hover:border-gray-300"
             >
               Sign In
             </Link>
+            <button className="relative group overflow-hidden rounded-lg bg-gradient-to-r from-teal-600 to-cyan-600 p-0.5 shadow-md hover:shadow-lg transition-all duration-300">
+              <div className="relative px-6 py-2 rounded-lg bg-white text-teal-600 font-medium text-sm group-hover:bg-transparent group-hover:text-white transition-all duration-300">
+                Get Started
+              </div>
+            </button>
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-primary-600 focus:outline-none"
+              className="text-gray-900 hover:text-teal-600 focus:outline-none transition-colors duration-200 p-2 hover:bg-gray-100 rounded-lg"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -61,25 +73,33 @@ const Navbar = () => {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t">
-          <div className="px-2 pt-2 pb-3 space-y-1">
+        <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
+          <div className="px-4 pt-2 pb-4 space-y-2">
             {navLinks.map((link) => (
               <a
                 key={link.name}
                 href={link.href}
-                className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors duration-200"
+                className="nav-link block px-4 py-2.5 text-gray-700 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all duration-200 font-medium"
                 onClick={() => setIsOpen(false)}
               >
                 {link.name}
               </a>
             ))}
-            <Link
-              to="/auth"
-              className="block mx-3 mt-2 text-center bg-primary-600 hover:bg-primary-700 px-6 py-2 rounded-full font-medium transition-colors duration-200 text-white"
-              onClick={() => setIsOpen(false)}
-            >
-              Sign In
-            </Link>
+            <div className="border-t border-gray-100 pt-3 mt-3 space-y-2">
+              <Link
+                to="/auth"
+                className="block px-4 py-2.5 text-center text-gray-700 border border-gray-200 rounded-lg font-medium hover:border-gray-300 hover:bg-gray-50 transition-all duration-200"
+                onClick={() => setIsOpen(false)}
+              >
+                Sign In
+              </Link>
+              <button 
+                className="w-full px-4 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
+                onClick={() => setIsOpen(false)}
+              >
+                Get Started
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-const Footer = () => {
+ const Footer = () => {
   const departments = [
     {
       title: 'Faculty of Information Technology & Computing',
@@ -103,12 +103,12 @@ const Footer = () => {
         {/* Logo and Legal Section */}
         <div className="pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-            {/* Logo Placeholder */}
-            <div className="w-12 h-12 md:w-16 md:h-16 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-primary-900 font-bold text-xs">LOGO</span>
+            {/* Logo */}
+            <div className="w-12 h-12 md:w-16 md:h-16 bg-teal-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-bold text-xl md:text-2xl">N</span>
             </div>
             <div className="text-xs sm:text-sm text-gray-300">
-              <p>NEXA - NOUN Exam Experience Assistant</p>
+              <p className="font-semibold text-white">NEXA - NOUN Exam Experience Assistant</p>
               <p className="mt-1">Your computer-based training platform for NOUN exam success</p>
             </div>
           </div>
