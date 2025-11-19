@@ -47,7 +47,13 @@ const Dashboard = () => {
   }, [user]);
 
   const fetchNotifications = async () => {
-    if (!user) return;
+    if (!user) {
+      console.warn('⚠️ No user, cannot fetch notifications');
+      return;
+    }
+    
+    console.log('🔔 ========== FETCHING NOTIFICATIONS ==========');
+    console.log('🔔 User ID:', user.id);
     
     try {
       const { data, error } = await supabase
@@ -57,10 +63,18 @@ const Dashboard = () => {
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error fetching notifications:', error);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error code:', error.code);
+        throw error;
+      }
+      
+      console.log('✅ Notifications fetched:', data?.length || 0, 'notifications');
+      console.log('✅ Notifications data:', data);
       setNotifications(data || []);
     } catch (error: any) {
-      console.error('Error fetching notifications:', error);
+      console.error('❌ Exception fetching notifications:', error);
     }
   };
 

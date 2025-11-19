@@ -24,19 +24,12 @@ interface PerformanceData {
 }
 
 const PerformanceChart = () => {
-  console.log('🎨 PerformanceChart component rendering...');
-  
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
-  
-  console.log('🎨 Theme:', isDarkMode ? 'dark' : 'light');
-  console.log('🎨 User from context:', user);
   
   const [data, setData] = useState<PerformanceData | null>(null);
   const [period, setPeriod] = useState('7');
   const [loading, setLoading] = useState(true);
-  
-  console.log('🎨 Component state:', { hasData: !!data, period, loading });
 
   useEffect(() => {
     console.log('🔄 PerformanceChart useEffect triggered');
