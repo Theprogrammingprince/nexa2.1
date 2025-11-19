@@ -199,35 +199,20 @@ const SettingsPage = () => {
     
     setLoading(true);
     try {
-      const { data: existing } = await supabase
+      // Use upsert to handle both insert and update
+      const { error } = await supabase
         .from('user_settings')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+        .upsert({
+          user_id: user.id,
+          language: preferences.language,
+          timezone: preferences.timezone,
+          theme: preferences.theme,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        });
 
-      if (existing) {
-        const { error } = await supabase
-          .from('user_settings')
-          .update({
-            language: preferences.language,
-            timezone: preferences.timezone,
-            theme: preferences.theme
-          })
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('user_settings')
-          .insert({
-            user_id: user.id,
-            language: preferences.language,
-            timezone: preferences.timezone,
-            theme: preferences.theme
-          });
-
-        if (error) throw error;
-      }
+      if (error) throw error;
 
       // Save theme to localStorage
       localStorage.setItem('theme', preferences.theme);
