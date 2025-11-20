@@ -4,7 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import supabase from '../supabaseClient';
 import toast, { Toaster } from 'react-hot-toast';
 import DashboardLayout from '../components/DashboardLayout';
-import { ChevronLeft, ChevronRight, Plus, Clock, MapPin, X, Bell, CheckCircle2, Circle, Repeat, Star, AlertCircle, } from 'lucide-react';
+
+import { ChevronLeft, ChevronRight, Plus, Clock, MapPin, X, Bell, CheckCircle2, Circle, Repeat, Star, AlertCircle } from 'lucide-react';
+
 
 interface Event {
   id: string;
