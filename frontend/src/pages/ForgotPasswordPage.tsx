@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, CheckCircle2, Lock, Eye, EyeOff } from 'lucide-react';
-import supabase from '../supabaseClient';
 import toast, { Toaster } from 'react-hot-toast';
 
 type Step = 'email' | 'verify' | 'reset';
@@ -47,37 +46,27 @@ const ForgotPasswordPage = () => {
     setLoading(true);
 
     try {
-      // Check if email exists in database
-      const { data: user, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .single();
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/forgot-password?action=send`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
 
-      if (userError || !user) {
-        toast.error('Email not found. Please check and try again.');
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to send reset code');
         setLoading(false);
         return;
       }
 
-      // In a real implementation, you'd send an email with a code
-      // For now, we'll generate a code and store it (you'd use a backend service)
-      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-      
-      // Store code in localStorage temporarily (in production, use a backend with expiry)
-      localStorage.setItem('resetCode', JSON.stringify({
-        code,
-        email,
-        timestamp: Date.now(),
-        expiry: Date.now() + 5 * 60 * 1000 // 5 minutes
-      }));
-
-      // Simulate sending email
-      console.log('Reset code:', code); // In development, check console
-      
-      toast.success(`Reset code sent to ${email}`);
-      toast.loading('Check your email for the verification code');
-      
+      toast.success('Reset code sent to your email! ✉️');
       setStep('verify');
       setCodeRequested(true);
       setTimeLeft(300);
@@ -94,31 +83,27 @@ const ForgotPasswordPage = () => {
     setLoading(true);
 
     try {
-      const storedData = localStorage.getItem('resetCode');
-      if (!storedData) {
-        toast.error('Reset code expired. Please request a new one.');
-        setStep('email');
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/forgot-password?action=verify`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ email, code: verificationCode }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || 'Invalid verification code');
         setLoading(false);
         return;
       }
 
-      const { code, email: storedEmail, expiry } = JSON.parse(storedData);
-
-      if (Date.now() > expiry) {
-        toast.error('Reset code expired. Please request a new one.');
-        localStorage.removeItem('resetCode');
-        setStep('email');
-        setLoading(false);
-        return;
-      }
-
-      if (verificationCode.toUpperCase() !== code || email !== storedEmail) {
-        toast.error('Invalid verification code. Please try again.');
-        setLoading(false);
-        return;
-      }
-
-      toast.success('Code verified! Now set your new password.');
+      toast.success('Code verified! Now set your new password. 🎉');
       setStep('reset');
     } catch (err: any) {
       toast.error('Verification failed. Please try again.');
@@ -145,24 +130,34 @@ const ForgotPasswordPage = () => {
         return;
       }
 
-      // Update password in Supabase
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/forgot-password?action=reset`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ 
+            email, 
+            code: verificationCode, 
+            newPassword 
+          }),
+        }
+      );
 
-      if (error) {
-        // If not authenticated, use resetPasswordForEmail
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email);
-        if (resetError) throw resetError;
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to reset password');
+        setLoading(false);
+        return;
       }
 
-      // Clear stored code
-      localStorage.removeItem('resetCode');
-
-      toast.success('Password reset successfully!');
-      navigate('/auth');
+      toast.success('Password reset successfully! 🎉');
+      setTimeout(() => navigate('/auth'), 1500);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to reset password. Please try again.');
+      toast.error('Failed to reset password. Please try again.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -172,16 +167,27 @@ const ForgotPasswordPage = () => {
   const handleResendCode = async () => {
     setLoading(true);
     try {
-      const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-      localStorage.setItem('resetCode', JSON.stringify({
-        code,
-        email,
-        timestamp: Date.now(),
-        expiry: Date.now() + 5 * 60 * 1000,
-      }));
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/forgot-password?action=send`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
 
-      console.log('New reset code:', code);
-      toast.success('New code sent to your email');
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to resend code');
+        setLoading(false);
+        return;
+      }
+
+      toast.success('New code sent to your email! ✉️');
       setCodeRequested(true);
       setTimeLeft(300);
       setVerificationCode('');
@@ -393,14 +399,6 @@ const ForgotPasswordPage = () => {
             </div>
           </div>
 
-          {/* Development Note */}
-          {step === 'verify' && (
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-xs text-blue-700">
-                <strong>Development Mode:</strong> Check your browser console for the verification code.
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </>
