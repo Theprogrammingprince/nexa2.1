@@ -181,9 +181,9 @@ const AuthPage = () => {
           {/* Footer Links */}
           {isLogin && (
             <div className="mt-4 sm:mt-6 text-center">
-              <a href="#" className="text-xs sm:text-sm text-gray-600 hover:text-primary-600 transition-colors">
+              <Link to="/forgot-password" className="text-xs sm:text-sm text-gray-600 hover:text-primary-600 transition-colors">
                 Forgot your password?
-              </a>
+              </Link>
             </div>
           )}
         </div>

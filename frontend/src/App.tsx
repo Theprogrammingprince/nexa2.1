@@ -5,6 +5,7 @@ import './App.css'
 import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage'
 import AuthPage from './pages/AuthPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import Dashboard from './pages/Dashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import SettingsPage from './pages/SettingsPage'
@@ -27,6 +28,7 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             
             {/* Protected Student Routes */}
