@@ -1,132 +1,116 @@
  const Footer = () => {
-  const departments = [
+  const quickLinks = [
     {
-      title: 'Faculty of Information Technology & Computing',
+      title: 'Platform',
       items: [
-        'Computer Science',
-        'Software Engineering',
-        'Networking & Cybersecurity',
+        { label: 'Home', href: '#home' },
+        { label: 'Features', href: '#features' },
+        { label: 'About Us', href: '#about' },
+        { label: 'Reviews', href: '#reviews' },
       ],
     },
     {
-      title: 'Faculty of Business & Management',
+      title: 'Resources',
       items: [
-        'Business Administration',
-        'Accounting & Finance',
-        'Marketing & Entrepreneurship',
+        { label: 'FAQ', href: '#faq' },
+        { label: 'Pricing', href: '/pricing' },
+        { label: 'Blog', href: '#' },
+        { label: 'Documentation', href: '#' },
       ],
     },
     {
-      title: 'Faculty of Arts & Humanities',
+      title: 'Company',
       items: [
-        'English Language & Literature',
-        'Social Sciences',
-        'Communication & Media Studies',
+        { label: 'About', href: '#about' },
+        { label: 'Contact', href: '#contact' },
+        { label: 'Careers', href: '#' },
+        { label: 'Partners', href: '#' },
       ],
     },
     {
-      title: 'Faculty of Science & Technology',
+      title: 'Legal',
       items: [
-        'Applied Sciences',
-        'Engineering Fundamentals',
-        'Environmental Studies',
-      ],
-    },
-    {
-      title: 'Faculty of Vocational & Professional Studies',
-      items: [
-        'Hospitality & Tourism Management',
-        'Event Management',
-        'Technical & Trade Skills',
-        'Fashion & Design',
-      ],
-    },
-    {
-      title: 'Faculty of Education & Training',
-      items: [
-        'Teacher Training Programs',
-        'Early Childhood Education',
-        'Educational Leadership',
+        { label: 'Privacy Policy', href: '#' },
+        { label: 'Terms of Service', href: '#' },
+        { label: 'Cookie Policy', href: '#' },
+        { label: 'Sitemap', href: '#' },
       ],
     },
   ];
 
-  const quickLinks = [
-    { title: 'Students', items: ['Academics', 'Alumni', 'Courses', 'Career'] },
-    { title: 'Faculty & Staffs', items: [] },
-    { title: 'Gallery', items: [] },
-    { title: 'The Institute', items: ['Happenings'] },
+  const socialLinks = [
+    { icon: 'f', label: 'Facebook', href: '#' },
+    { icon: 'tw', label: 'Twitter', href: '#' },
+    { icon: 'in', label: 'LinkedIn', href: '#' },
+    { icon: 'ig', label: 'Instagram', href: '#' },
   ];
 
   return (
     <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        {/* Quick Links Section */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 pb-6 md:pb-8 border-b border-gray-700">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-8 border-b border-gray-800">
+          {/* Brand Section */}
+          <div className="lg:col-span-1 flex flex-col justify-start">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xl">N</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">NEXA</h3>
+                <p className="text-xs text-gray-400">Exam Success Platform</p>
+              </div>
+            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              Your computer-based training platform for NOUN exam success. Practice, Track, Excel.
+            </p>
+            <div className="flex gap-3">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  title={social.label}
+                  className="w-10 h-10 rounded-lg bg-gray-800 hover:bg-teal-600 flex items-center justify-center transition-colors duration-200"
+                >
+                  <span className="text-xs font-bold">{social.icon}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Links Sections */}
           {quickLinks.map((section, index) => (
             <div key={index}>
-              <h3 className="font-semibold mb-3">{section.title}</h3>
-              {section.items.length > 0 && (
-                <ul className="space-y-2">
-                  {section.items.map((item, idx) => (
-                    <li key={idx}>
-                      <a href="#" className="text-primary-200 hover:text-white text-sm transition-colors">
-                        {item}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">
+                {section.title}
+              </h4>
+              <ul className="space-y-3">
+                {section.items.map((item, idx) => (
+                  <li key={idx}>
+                    <a
+                      href={item.href}
+                      className="text-gray-400 hover:text-teal-400 text-sm transition-colors duration-200"
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
 
-        {/* Departments Section */}
-        <div className="py-6 md:py-8 border-b border-gray-700">
-          <h3 className="font-semibold text-base md:text-lg mb-4 md:mb-6">Departments</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
-            {departments.map((dept, index) => (
-              <div key={index}>
-                <h4 className="font-medium mb-3 text-gray-200">{dept.title}</h4>
-                <ul className="space-y-2">
-                  {dept.items.map((item, idx) => (
-                    <li key={idx} className="text-gray-400 text-sm">
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Logo and Legal Section */}
-        <div className="pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-            {/* Logo */}
-            <div className="w-12 h-12 md:w-16 md:h-16 bg-teal-500 rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-xl md:text-2xl">N</span>
-            </div>
-            <div className="text-xs sm:text-sm text-gray-300">
-              <p className="font-semibold text-white">NEXA - NOUN Exam Experience Assistant</p>
-              <p className="mt-1">Your computer-based training platform for NOUN exam success</p>
-            </div>
-          </div>
-        </div>
-
         {/* Bottom Bar */}
-        <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-700 flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4 text-xs sm:text-sm text-gray-400">
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Sitemap</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Use</a>
+        <div className="pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+          <div className="text-center sm:text-left">
+            <p>© 2025 NEXA - All rights reserved. Building Leaders, One Exam at a Time.</p>
           </div>
-          <div className="text-center">
-            <p>© 2025 Nexa - All rights reserved</p>
-          </div>
-          <div className="text-center">
-            <p className="hidden sm:inline">Website lastly updated on {new Date().toLocaleDateString()}</p>
-            <p className="sm:hidden">Updated {new Date().toLocaleDateString()}</p>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-teal-400 transition-colors">Privacy</a>
+            <span className="text-gray-700">•</span>
+            <a href="#" className="hover:text-teal-400 transition-colors">Terms</a>
+            <span className="text-gray-700">•</span>
+            <span>Updated {new Date().toLocaleDateString()}</span>
           </div>
         </div>
       </div>
