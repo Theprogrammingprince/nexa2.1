@@ -7,6 +7,8 @@ import {
   Highlighter,
   List,
   ListOrdered,
+  Indent,
+  Outdent,
   Save,
   Trash2,
 } from 'lucide-react';
@@ -90,6 +92,23 @@ const RichNoteEditor = ({ summaryId }: RichNoteEditorProps) => {
     document.execCommand(command, false, value);
     if (editorRef.current) {
       setContent(editorRef.current.innerHTML);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    // Handle Tab key for proper indentation
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        // Shift+Tab: Outdent
+        document.execCommand('outdent', false);
+      } else {
+        // Tab: Indent
+        document.execCommand('indent', false);
+      }
+      if (editorRef.current) {
+        setContent(editorRef.current.innerHTML);
+      }
     }
   };
 
@@ -183,6 +202,24 @@ const RichNoteEditor = ({ summaryId }: RichNoteEditorProps) => {
           </button>
         </div>
 
+        {/* Indentation */}
+        <div className="flex items-center gap-1 border-r pr-2 border-gray-300">
+          <button
+            onClick={() => applyFormatting('indent')}
+            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+            title="Indent (Tab)"
+          >
+            <Indent className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => applyFormatting('outdent')}
+            className={`p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}
+            title="Outdent (Shift+Tab)"
+          >
+            <Outdent className="w-4 h-4" />
+          </button>
+        </div>
+
         {/* Font Size */}
         <div className="flex items-center gap-1 border-r pr-2 border-gray-300">
           <select
@@ -226,6 +263,7 @@ const RichNoteEditor = ({ summaryId }: RichNoteEditorProps) => {
         ref={editorRef}
         contentEditable
         onInput={(e) => setContent(e.currentTarget.innerHTML)}
+        onKeyDown={handleKeyDown}
         dangerouslySetInnerHTML={{ __html: content }}
         className={`min-h-[400px] p-4 rounded-lg border-2 focus:outline-none focus:border-primary-500 ${
           isDarkMode
