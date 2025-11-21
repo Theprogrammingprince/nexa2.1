@@ -1,14 +1,61 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { ChevronLeft, ChevronRight, BookOpen, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, FileText, Menu, X } from 'lucide-react';
 import RichNoteEditor from '../components/RichNoteEditor';
+import supabase from '../supabaseClient';
+import toast, { Toaster } from 'react-hot-toast';
 
 const SummaryDetailPage = () => {
   const { isDarkMode } = useTheme();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'summary' | 'notes'>('summary');
   const [currentSection, setCurrentSection] = useState(0);
   const [readingProgress, setReadingProgress] = useState(0);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  // Function to navigate to CBT
+  const handleTakeCBT = async () => {
+    try {
+      // Find course by course code
+      const { data: course, error } = await supabase
+        .from('courses')
+        .select('id, code')
+        .eq('code', summary.courseCode)
+        .single();
+
+      if (error || !course) {
+        toast.error(`No CBT found for ${summary.courseCode}. This course is not available in CBT.`, {
+          duration: 4000,
+          icon: '❌',
+        });
+        return;
+      }
+
+      // Check if there are questions for this course
+      const { data: questions, error: questionsError } = await supabase
+        .from('questions')
+        .select('id')
+        .eq('course_id', course.id)
+        .limit(1);
+
+      if (questionsError || !questions || questions.length === 0) {
+        toast.error(`No questions available for ${summary.courseCode} yet.`, {
+          duration: 4000,
+          icon: '📝',
+        });
+        return;
+      }
+
+      // Navigate to CBT instruction page
+      navigate(`/cbt/${course.id}`);
+    } catch (error) {
+      console.error('Error navigating to CBT:', error);
+      toast.error('Failed to load CBT. Please try again.');
+    }
+  };
 
   // Mock data - will come from API later
   const summary = {
@@ -106,63 +153,103 @@ const SummaryDetailPage = () => {
 
   return (
     <div className={`flex h-screen overflow-hidden ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <Toaster position="top-right" />
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )}
+
       {/* Sidebar */}
-      <aside className={`w-64 flex flex-col flex-shrink-0 ${isDarkMode ? 'bg-gray-950' : 'bg-gray-900'} text-white`}>
-        <div className="p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">N</span>
+      <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} flex flex-col flex-shrink-0 bg-gray-900 text-white fixed lg:static inset-y-0 left-0 z-50 transform transition-all duration-300 ease-in-out ${
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}>
+        <div className={`p-6 ${isSidebarCollapsed ? 'px-3' : ''}`}>
+          <div className="flex items-center justify-between">
+            <div className={`flex items-center gap-2 ${isSidebarCollapsed ? 'flex-col' : ''}`}>
+              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-bold">N</span>
+              </div>
+              {!isSidebarCollapsed && <span className="text-xl font-bold whitespace-nowrap">NEXA</span>}
             </div>
-            <span className="text-xl font-bold">NEXA</span>
+            {/* Close button for mobile */}
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="lg:hidden p-2 hover:bg-gray-800 rounded-lg flex-shrink-0"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            {/* Collapse button for desktop */}
+            {!isSidebarCollapsed && (
+              <button
+                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                className="hidden lg:block p-2 hover:bg-gray-800 rounded-lg transition-colors flex-shrink-0"
+                title="Collapse sidebar"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            )}
           </div>
+          {/* Expand button when collapsed */}
+          {isSidebarCollapsed && (
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="hidden lg:flex w-full justify-center mt-4 p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              title="Expand sidebar"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
-        <nav className="flex-1 px-4">
-          <a href="/dashboard" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
+        <nav className="flex-1 px-4 overflow-y-auto">
+          <a href="/dashboard" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-            <span>Dashboard</span>
+            {!isSidebarCollapsed && <span>Dashboard</span>}
           </a>
-          <a href="/summaries" className="flex items-center gap-3 px-4 py-3 bg-gray-800 rounded-lg mb-2">
+          <a href="/summaries" className={`flex items-center gap-3 px-4 py-3 bg-gray-800 rounded-lg mb-2 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span>Summaries</span>
+            {!isSidebarCollapsed && <span>Summaries</span>}
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
+          <a href="#" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
-            <span>CBT Practice</span>
+            {!isSidebarCollapsed && <span>CBT Practice</span>}
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
+          <a href="#" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <span>Schedule</span>
+            {!isSidebarCollapsed && <span>Schedule</span>}
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
+          <a href="#" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
             </svg>
-            <span>Resources</span>
+            {!isSidebarCollapsed && <span>Resources</span>}
           </a>
         </nav>
 
         <div className="p-4 border-t border-gray-800">
-          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
+          <a href="#" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>Get Help</span>
+            {!isSidebarCollapsed && <span>Get Help</span>}
           </a>
-          <a href="/settings" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg transition-colors">
+          <a href="/settings" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            <span>Settings</span>
+            {!isSidebarCollapsed && <span>Settings</span>}
           </a>
         </div>
       </aside>
@@ -170,8 +257,15 @@ const SummaryDetailPage = () => {
       {/* Main Content Wrapper */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className={`border-b px-4 sm:px-6 lg:px-8 py-4 flex-shrink-0 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white'}`}>
-          <div className="flex items-center justify-between">
+        <header className={`border-b px-4 sm:px-6 lg:px-8 py-4 flex-shrink-0 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+          <div className="flex items-center justify-between gap-4">
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className={`lg:hidden p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+            >
+              <Menu className={`w-6 h-6 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} />
+            </button>
             <a href="/summaries" className={`flex items-center gap-2 ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -182,12 +276,12 @@ const SummaryDetailPage = () => {
               <button className={`px-4 py-2 rounded-lg transition-colors ${isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
                 Download PDF
               </button>
-              <a
-                href="/cbt"
+              <button
+                onClick={handleTakeCBT}
                 className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
               >
                 Take CBT Practice
-              </a>
+              </button>
             </div>
           </div>
         </header>
@@ -205,10 +299,10 @@ const SummaryDetailPage = () => {
               </div>
               <div className="py-4">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">
-                    Reading Progress: <span className="font-semibold text-primary-600">{Math.round(readingProgress)}%</span>
+                  <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                    Reading Progress: <span className={`font-semibold ${isDarkMode ? 'text-primary-400' : 'text-primary-600'}`}>{Math.round(readingProgress)}%</span>
                   </span>
-                  <span className="text-gray-500">{summary.readTime} read</span>
+                  <span className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>{summary.readTime} read</span>
                 </div>
               </div>
             </div>
@@ -216,22 +310,26 @@ const SummaryDetailPage = () => {
             {/* Title Section */}
             <div className="mb-8">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm font-semibold text-primary-600 bg-primary-50 px-3 py-1 rounded">
+                <span className={`text-sm font-semibold px-3 py-1 rounded ${isDarkMode ? 'text-primary-400 bg-primary-900/30' : 'text-primary-600 bg-primary-50'}`}>
                   {summary.courseCode}
                 </span>
-                <span className="text-sm text-gray-500">• {summary.course}</span>
+                <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>• {summary.course}</span>
               </div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">{summary.title}</h1>
-              <p className="text-gray-600">Last updated {summary.lastUpdated}</p>
+              <h1 className={`text-4xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{summary.title}</h1>
+              <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>Last updated {summary.lastUpdated}</p>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 mb-8 border-b">
+            <div className={`flex gap-4 mb-8 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
               <button
                 onClick={() => setActiveTab('summary')}
                 className={`pb-3 px-1 font-medium transition-colors ${
                   activeTab === 'summary'
-                    ? 'text-primary-600 border-b-2 border-primary-600'
+                    ? isDarkMode
+                      ? 'text-primary-400 border-b-2 border-primary-400'
+                      : 'text-primary-600 border-b-2 border-primary-600'
+                    : isDarkMode
+                    ? 'text-gray-400 hover:text-gray-200'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -241,7 +339,11 @@ const SummaryDetailPage = () => {
                 onClick={() => setActiveTab('notes')}
                 className={`pb-3 px-1 font-medium transition-colors ${
                   activeTab === 'notes'
-                    ? 'text-primary-600 border-b-2 border-primary-600'
+                    ? isDarkMode
+                      ? 'text-primary-400 border-b-2 border-primary-400'
+                      : 'text-primary-600 border-b-2 border-primary-600'
+                    : isDarkMode
+                    ? 'text-gray-400 hover:text-gray-200'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -355,13 +457,13 @@ const SummaryDetailPage = () => {
                         <ChevronRight className="w-5 h-5" />
                       </button>
                     ) : (
-                      <a
-                        href="/cbt"
+                      <button
+                        onClick={handleTakeCBT}
                         className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all font-semibold"
                       >
                         <FileText className="w-5 h-5" />
                         Take CBT Test
-                      </a>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -376,12 +478,12 @@ const SummaryDetailPage = () => {
                     <p className={`mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                       You've completed all sections. Ready to test your knowledge?
                     </p>
-                    <a
-                      href="/cbt"
+                    <button
+                      onClick={handleTakeCBT}
                       className="inline-block px-8 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold text-lg"
                     >
                       Take CBT Practice Test →
-                    </a>
+                    </button>
                   </div>
                 )}
               </div>

@@ -37,9 +37,9 @@
     "admin-top-performers": "{\"index.ts\":\"063abc54739cdf0210dc213540a31f05\"}",
     "check-event-reminders": "{\"index.ts\":\"c6a342f1a40db9fce856c89774ba28cd\"}",
     "create-checkout-session": "{\"index.ts\":\"d3ca836173dda44f1c1617facac2dc8d\"}",
-    "forgot-password": "{\"index.ts\":\"4c3163e75b026760764bf4195db65178\"}",
+    "forgot-password": "{\"index.ts\":\"dca903d6780d6fc692bbb1380bce7d84\"}",
     "get-user-subscription": "{\"index.ts\":\"e1f002860444d9987939a8a05d7091db\"}",
-    "manage-notes": "{\"index.ts\":\"e6bc07c903195a9239fbd2b30f9fe7d0\"}",
+    "manage-notes": "{\"index.ts\":\"d22b16f3570fad03e0ee4f9235272dac\"}",
     "manage-subscription": "{\"index.ts\":\"ce1bfbfbe05ef6e653dac8242ae55bcc\"}",
     "stripe-webhook": "{\"index.ts\":\"a878d2f7702e9acbb1b840e58611a344\"}"
   }

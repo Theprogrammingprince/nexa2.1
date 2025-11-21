@@ -210,3 +210,29 @@ button, a {
 .animate-pulse-glow {
   animation: pulse-glow 2s infinite;
 }
+
+/* Rich Note Editor Styles */
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: embed !important;
+}
+
+[contenteditable]:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+  position: absolute;
+}
+
+[contenteditable]:focus {
+  outline: none;
+}
+
+/* Ensure proper text direction for all content */
+[contenteditable] * {
+  direction: ltr !important;
+  unicode-bidi: embed !important;
+}

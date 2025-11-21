@@ -5,9 +5,15 @@ const FUNCTIONS_URL = import.meta.env.VITE_SUPABASE_URL + '/functions/v1';
 // Helper function to get auth headers
 const getAuthHeaders = async () => {
     // Get the current session (Supabase handles auto-refresh)
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+        console.error('❌ Session error:', error);
+        throw new Error('Session error: ' + error.message);
+    }
     
     if (!session?.access_token) {
+        console.error('❌ No active session - user needs to log in');
         throw new Error('No active session');
     }
     
@@ -453,6 +459,14 @@ export const billingAPI = {
 
 // Notes API
 export const notesAPI = {
+    // Get all notes for a summary
+    getNotes: async (summaryId: string) => {
+        const response = await fetch(`${FUNCTIONS_URL}/manage-notes?summary_id=${summaryId}&all=true`, {
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
     // Get note for a summary
     getNote: async (summaryId: string) => {
         const response = await fetch(`${FUNCTIONS_URL}/manage-notes?summary_id=${summaryId}`, {
@@ -476,9 +490,9 @@ export const notesAPI = {
         return response.json();
     },
 
-    // Delete note
-    deleteNote: async (summaryId: string) => {
-        const response = await fetch(`${FUNCTIONS_URL}/manage-notes?summary_id=${summaryId}`, {
+    // Delete note by ID
+    deleteNote: async (noteId: string) => {
+        const response = await fetch(`${FUNCTIONS_URL}/manage-notes?note_id=${noteId}`, {
             method: 'DELETE',
             headers: await getAuthHeaders(),
         });
