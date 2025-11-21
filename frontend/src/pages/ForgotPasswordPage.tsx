@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, CheckCircle2, Lock, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Mail, CheckCircle2, Lock, Eye, EyeOff, Copy, X } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 type Step = 'email' | 'verify' | 'reset';
@@ -17,6 +17,8 @@ const ForgotPasswordPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [codeRequested, setCodeRequested] = useState(false);
+  const [showCodeModal, setShowCodeModal] = useState(false);
+  const [generatedCode, setGeneratedCode] = useState('');
 
   // Timer for code expiry
   useEffect(() => {
@@ -66,7 +68,15 @@ const ForgotPasswordPage = () => {
         return;
       }
 
-      toast.success('Reset code sent to your email! ✉️');
+      // IN-HOUSE VERIFICATION: Show code in modal
+      if (data.code) {
+        setGeneratedCode(data.code);
+        setShowCodeModal(true);
+        toast.success('Reset code generated! 🔐');
+      } else {
+        toast.success('Reset code sent to your email! ✉️');
+      }
+      
       setStep('verify');
       setCodeRequested(true);
       setTimeLeft(300);
@@ -401,6 +411,71 @@ const ForgotPasswordPage = () => {
 
         </div>
       </div>
+
+      {/* Code Display Modal */}
+      {showCodeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Your Reset Code</h3>
+              <button
+                onClick={() => setShowCodeModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-600 mb-4">
+                Copy this code and paste it in the verification field below. This code expires in 5 minutes.
+              </p>
+              
+              {/* Code Display Box */}
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-xl p-6 mb-4">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-2">Verification Code</p>
+                  <div className="text-4xl font-bold text-gray-900 tracking-[0.5em] font-mono mb-3">
+                    {generatedCode}
+                  </div>
+                  <p className="text-xs text-gray-500">Expires in 5 minutes</p>
+                </div>
+              </div>
+
+              {/* Copy Button */}
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(generatedCode);
+                  toast.success('Code copied to clipboard! 📋');
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-[#101829] text-white py-3 rounded-lg font-medium hover:bg-[#0a0f1a] transition-all"
+              >
+                <Copy className="w-5 h-5" />
+                Copy Code
+              </button>
+
+              {/* Auto-paste button */}
+              <button
+                onClick={() => {
+                  setVerificationCode(generatedCode);
+                  setShowCodeModal(false);
+                  toast.success('Code pasted! Now verify it.');
+                }}
+                className="w-full mt-3 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-all"
+              >
+                <CheckCircle2 className="w-5 h-5" />
+                Paste & Continue
+              </button>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Note:</strong> This is an in-house verification system. In production, codes will be sent via email.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

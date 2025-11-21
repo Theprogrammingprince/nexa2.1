@@ -127,8 +127,28 @@ serve(async (req) => {
 
       console.log('Reset code stored successfully');
 
+      // IN-HOUSE VERIFICATION: Return code directly instead of emailing
+      // This is for development/testing - email can be enabled later
+      console.log('=== IN-HOUSE VERIFICATION MODE ===');
+      console.log('Returning code directly to user');
+      console.log('Code:', code);
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Reset code generated successfully',
+          code: code, // Return the code directly
+          email: email,
+          expiresIn: '5 minutes'
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+
+      /* EMAIL SENDING - DISABLED FOR NOW
       // Send email via Resend
       console.log('Sending email via Resend...');
+      console.log('From address: NEXA <noreply@nexaedu.ng>');
+      console.log('To address:', email);
       try {
         const resendResponse = await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -251,6 +271,7 @@ serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+      END OF EMAIL SENDING COMMENT */
     }
 
     // VERIFY CODE
