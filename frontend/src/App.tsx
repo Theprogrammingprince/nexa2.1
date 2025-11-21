@@ -20,6 +20,11 @@ import CBTResultsPage from './pages/CBTResultsPage'
 import AdminAddSummary from './pages/AdminAddSummary'
 import AdminAddQuestions from './pages/AdminAddQuestions'
 import BillingPage from './pages/BillingPage'
+import AdminStudents from './pages/AdminStudents'
+import AdminAnalytics from './pages/AdminAnalytics'
+import AdminMessages from './pages/AdminMessages'
+import AdminAnnouncements from './pages/AdminAnnouncements'
+import GetHelpPage from './pages/GetHelpPage'
 
 function App() {
   return (
@@ -44,9 +49,14 @@ function App() {
             <Route path="/cbt/instruction/:courseId" element={<ProtectedRoute><CBTInstructionPage /></ProtectedRoute>} />
             <Route path="/cbt/test/:courseId" element={<ProtectedRoute><CBTTestPage /></ProtectedRoute>} />
             <Route path="/cbt/results" element={<ProtectedRoute><CBTResultsPage /></ProtectedRoute>} />
+            <Route path="/help" element={<ProtectedRoute><GetHelpPage /></ProtectedRoute>} />
             
             {/* Admin Only Routes */}
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/students" element={<ProtectedRoute requireAdmin><AdminStudents /></ProtectedRoute>} />
+            <Route path="/admin/analytics" element={<ProtectedRoute requireAdmin><AdminAnalytics /></ProtectedRoute>} />
+            <Route path="/admin/messages" element={<ProtectedRoute requireAdmin><AdminMessages /></ProtectedRoute>} />
+            <Route path="/admin/announcements" element={<ProtectedRoute requireAdmin><AdminAnnouncements /></ProtectedRoute>} />
             <Route path="/admin/add-summary" element={<ProtectedRoute requireAdmin><AdminAddSummary /></ProtectedRoute>} />
             <Route path="/admin/add-questions" element={<ProtectedRoute requireAdmin><AdminAddQuestions /></ProtectedRoute>} />
           </Routes>

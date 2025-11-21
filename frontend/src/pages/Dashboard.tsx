@@ -5,6 +5,7 @@ import supabase from '../supabaseClient';
 import { dashboardAPI } from '../services/api';
 import toast, { Toaster } from 'react-hot-toast';
 import PerformanceChart from '../components/PerformanceChart';
+import TodoList from '../components/TodoList';
 
 const Dashboard = () => {
   const [currentDate] = useState(new Date()); // Current date
@@ -203,14 +204,6 @@ const Dashboard = () => {
     },
   ];
 
-  const tasks = [
-    { id: 1, title: 'Math Class', subject: 'Class', date: 'JAN 02, 2025', time: 'At 01:00 PM' },
-    { id: 2, title: 'Batch Re-Union', subject: 'Cultural Activity', date: 'JAN 02, 2025', time: 'At 05:00 AM' },
-    { id: 3, title: 'Gardening Campaign', subject: 'Class', date: 'JAN 02, 2025', time: 'At 01:00 PM' },
-    { id: 4, title: 'System Analysis Class', subject: 'Class', date: 'JAN 02, 2025', time: 'At 01:00 PM' },
-    { id: 5, title: 'Data Structure Class', subject: 'Class', date: 'JAN 02, 2025', time: 'At 02:00 PM' },
-  ];
-
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -281,7 +274,7 @@ const Dashboard = () => {
         </nav>
 
         <div className="p-4 border-t border-gray-800">
-          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
+          <a href="/help" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -707,29 +700,8 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Tasks */}
-            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 sm:p-6`}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Tasks</h3>
-                <a href="#" className="text-sm text-primary-600 hover:text-primary-700">
-                  View all
-                </a>
-              </div>
-              <div className="space-y-4">
-                {tasks.map((task) => (
-                  <div key={task.id} className="flex items-start gap-3">
-                    <input type="checkbox" className="mt-1 w-4 h-4 text-primary-600 rounded" />
-                    <div className="flex-1">
-                      <h4 className={`font-medium text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{task.title}</h4>
-                      <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{task.subject}</p>
-                      <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                        {task.date}<br />{task.time}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Todo Tasks */}
+            <TodoList />
           </div>
         </div>
       </main>

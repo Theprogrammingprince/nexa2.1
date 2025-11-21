@@ -146,7 +146,7 @@ const BillingPage = () => {
     },
     {
       name: 'Pro',
-      price: '₦2,500',
+      price: '₦2,000',
       period: 'per month',
       features: [
         { text: 'All basic summaries', included: true },
@@ -258,13 +258,17 @@ const BillingPage = () => {
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className={`rounded-xl p-6 relative ${
-                  plan.popular
-                    ? 'ring-2 ring-primary-500 shadow-lg'
+                className={`relative rounded-xl p-6 border-2 transition-all ${
+                  plan.current
+                    ? isDarkMode
+                      ? 'border-primary-500 bg-primary-900/20'
+                      : 'border-primary-500 bg-primary-50'
                     : isDarkMode
-                    ? 'bg-gray-800'
-                    : 'bg-white'
-                } ${isDarkMode && !plan.popular ? 'bg-gray-800' : plan.popular ? 'bg-gradient-to-br from-primary-50 to-purple-50' : 'bg-white'}`}
+                    ? 'border-gray-700 bg-gray-800 hover:border-primary-500'
+                    : 'border-gray-200 bg-white hover:border-primary-300'
+                } ${
+                  plan.popular ? 'ring-2 ring-primary-500 ring-offset-2' : ''
+                }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -276,14 +280,14 @@ const BillingPage = () => {
                 )}
 
                 <div className="mb-6">
-                  <h3 className={`text-2xl font-bold mb-2 ${isDarkMode && !plan.popular ? 'text-white' : 'text-gray-900'}`}>
+                  <h3 className={`text-2xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline gap-2">
-                    <span className={`text-4xl font-bold ${plan.popular ? 'text-primary-600' : isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <span className={`text-4xl font-bold ${plan.popular ? 'text-primary-500' : isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                       {plan.price}
                     </span>
-                    <span className={isDarkMode && !plan.popular ? 'text-gray-400' : 'text-gray-600'}>
+                    <span className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>
                       {plan.period}
                     </span>
                   </div>
@@ -300,9 +304,11 @@ const BillingPage = () => {
                       <span
                         className={`text-sm ${
                           feature.included
-                            ? isDarkMode && !plan.popular
+                            ? isDarkMode
                               ? 'text-gray-300'
                               : 'text-gray-700'
+                            : isDarkMode
+                            ? 'text-gray-500 line-through'
                             : 'text-gray-400 line-through'
                         }`}
                       >

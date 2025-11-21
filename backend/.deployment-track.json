@@ -17,7 +17,7 @@
     "submit-test": "{\"index.ts\":\"528533ef95a7e1ecc4e78a4d18a30af1\"}",
     "update-user-profile": "{\"index.ts\":\"98c49e77781f5f37d27e392edc300506\"}",
     "get-course-question-count": "{\"index.ts\":\"1dc6b42a56d4ad7184e1b09f2ee72693\"}",
-    "get-course-questions": "{\"index.ts\":\"ba97e05534a3e1312ecc7c9e02d13c24\"}",
+    "get-course-questions": "{\"index.ts\":\"3ef0197afedfcd20bb1eb757596554fe\"}",
     "create-calendar-event": "{\"index.ts\":\"907fcc3ab8eaae75266536e212555a75\"}",
     "delete-calendar-event": "{\"index.ts\":\"50a92676c6420245165994db190e4b46\"}",
     "get-calendar-events": "{\"index.ts\":\"f96531f356c58dc100f7ed8e4376a2c5\"}",
@@ -28,6 +28,19 @@
     "mark-all-notifications-read": "{\"index.ts\":\"21743969e988d2242679e12e6b784046\"}",
     "get-user-settings": "{\"index.ts\":\"e87ccd2b5e30e569afeb749adc405d46\"}",
     "update-user-settings": "{\"index.ts\":\"734d1c40c721e6ec9b37bc3f19d3e3dc\"}",
-    "get-performance-chart": "{\"index.ts\":\"b351f9f1a6cef05bb7d1aca5836ae4ff\"}"
+    "get-performance-chart": "{\"index.ts\":\"34e63b63acb00621faeab8db77d8cc2a\"}",
+    "admin-analytics": "{\"index.ts\":\"c79b0333983752614ace79fed8a89dd6\"}",
+    "admin-get-students": "{\"index.ts\":\"0a05b35313ab1a5119c019ed8ff6cce3\"}",
+    "admin-manage-announcements": "{\"index.ts\":\"e1afdb766c77f3a7ae1be8a8726a14ba\"}",
+    "admin-manage-messages": "{\"index.ts\":\"26629c6554be148f4a90ca1599140942\"}",
+    "admin-notifications": "{\"index.ts\":\"eb95f9627d5eba4e1fec0caec5a0470a\"}",
+    "admin-top-performers": "{\"index.ts\":\"063abc54739cdf0210dc213540a31f05\"}",
+    "check-event-reminders": "{\"index.ts\":\"c6a342f1a40db9fce856c89774ba28cd\"}",
+    "create-checkout-session": "{\"index.ts\":\"d3ca836173dda44f1c1617facac2dc8d\"}",
+    "forgot-password": "{\"index.ts\":\"4c3163e75b026760764bf4195db65178\"}",
+    "get-user-subscription": "{\"index.ts\":\"e1f002860444d9987939a8a05d7091db\"}",
+    "manage-notes": "{\"index.ts\":\"e6bc07c903195a9239fbd2b30f9fe7d0\"}",
+    "manage-subscription": "{\"index.ts\":\"ce1bfbfbe05ef6e653dac8242ae55bcc\"}",
+    "stripe-webhook": "{\"index.ts\":\"a878d2f7702e9acbb1b840e58611a344\"}"
   }
 }

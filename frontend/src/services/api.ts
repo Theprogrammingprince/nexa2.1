@@ -486,6 +486,147 @@ export const notesAPI = {
     },
 };
 
+// Admin API - Extended
+export const adminExtendedAPI = {
+    // Students Management
+    getStudents: async () => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-get-students`, {
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    getStudentDetails: async (studentId: string) => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-get-students?student_id=${studentId}`, {
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    // Analytics
+    getAnalytics: async () => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-analytics`, {
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    // Top Performers
+    getTopPerformers: async () => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-top-performers`, {
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    // Admin Notifications
+    getAdminNotifications: async () => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-notifications`, {
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    markNotificationRead: async (notificationId: string) => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-notifications?notification_id=${notificationId}`, {
+            method: 'PUT',
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    deleteAdminNotification: async (notificationId: string) => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-notifications?notification_id=${notificationId}`, {
+            method: 'DELETE',
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    // Support Messages
+    getMessages: async () => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-manage-messages`, {
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    getMessage: async (messageId: string) => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-manage-messages?message_id=${messageId}`, {
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    updateMessageStatus: async (messageId: string, status: string, reply?: string) => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-manage-messages?message_id=${messageId}`, {
+            method: 'PUT',
+            headers: await getAuthHeaders(),
+            body: JSON.stringify({ status, reply_message: reply }),
+        });
+        return response.json();
+    },
+
+    deleteMessage: async (messageId: string) => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-manage-messages?message_id=${messageId}`, {
+            method: 'DELETE',
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    // Announcements
+    getAnnouncements: async (target?: string) => {
+        const url = target 
+            ? `${FUNCTIONS_URL}/admin-manage-announcements?target=${target}`
+            : `${FUNCTIONS_URL}/admin-manage-announcements`;
+        const response = await fetch(url, {
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+
+    createAnnouncement: async (data: any) => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-manage-announcements`, {
+            method: 'POST',
+            headers: await getAuthHeaders(),
+            body: JSON.stringify(data),
+        });
+        return response.json();
+    },
+
+    updateAnnouncement: async (announcementId: string, data: any) => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-manage-announcements?announcement_id=${announcementId}`, {
+            method: 'PUT',
+            headers: await getAuthHeaders(),
+            body: JSON.stringify(data),
+        });
+        return response.json();
+    },
+
+    deleteAnnouncement: async (announcementId: string) => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-manage-announcements?announcement_id=${announcementId}`, {
+            method: 'DELETE',
+            headers: await getAuthHeaders(),
+        });
+        return response.json();
+    },
+};
+
+// Support/Contact API (for users)
+export const supportAPI = {
+    sendMessage: async (data: { name: string; email: string; subject: string; message: string; priority?: string }) => {
+        const response = await fetch(`${FUNCTIONS_URL}/admin-manage-messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return response.json();
+    },
+};
+
 export default {
     auth: authAPI,
     summaries: summariesAPI,
@@ -498,8 +639,10 @@ export default {
     schedule: scheduleAPI,
     user: userAPI,
     admin: adminAPI,
+    adminExtended: adminExtendedAPI,
     dashboard: dashboardAPI,
     settings: settingsAPI,
     billing: billingAPI,
     notes: notesAPI,
+    support: supportAPI,
 };

@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { adminExtendedAPI } from '../services/api';
+import { Award, TrendingUp, BookOpen, Eye } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [topPerformers, setTopPerformers] = useState<any[]>([]);
+  const [loadingPerformers, setLoadingPerformers] = useState(true);
+  const [selectedPerformer, setSelectedPerformer] = useState<any>(null);
 
   const stats = [
     { label: 'Total Students', value: '1,248', change: '+12% this month', trend: 'up', color: 'bg-blue-200' },
@@ -53,13 +58,20 @@ const AdminDashboard = () => {
     },
   ];
 
-  const topStudents = [
-    { id: 1, name: 'Alice Johnson', score: '95%', tests: 12 },
-    { id: 2, name: 'Bob Smith', score: '92%', tests: 11 },
-    { id: 3, name: 'Carol Williams', score: '90%', tests: 10 },
-    { id: 4, name: 'David Brown', score: '88%', tests: 12 },
-    { id: 5, name: 'Eve Davis', score: '87%', tests: 9 },
-  ];
+  useEffect(() => {
+    fetchTopPerformers();
+  }, []);
+
+  const fetchTopPerformers = async () => {
+    try {
+      const { topPerformers: data } = await adminExtendedAPI.getTopPerformers();
+      setTopPerformers(data || []);
+    } catch (error) {
+      console.error('Error fetching top performers:', error);
+    } finally {
+      setLoadingPerformers(false);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -120,35 +132,47 @@ const AdminDashboard = () => {
         </div>
 
         <nav className="flex-1 px-4">
-          <a href="#" className={`flex items-center gap-3 px-4 py-3 bg-gray-800 rounded-lg mb-2 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+          <a href="/admin" className={`flex items-center gap-3 px-4 py-3 bg-gray-800 rounded-lg mb-2 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
             {!isSidebarCollapsed && <span>Dashboard</span>}
           </a>
-          <a href="#" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+          <a href="/admin/students" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
             {!isSidebarCollapsed && <span>Students</span>}
           </a>
-          <a href="#" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-            {!isSidebarCollapsed && <span>Tests</span>}
-          </a>
-          <a href="#" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            {!isSidebarCollapsed && <span>Courses</span>}
-          </a>
-          <a href="#" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+          <a href="/admin/analytics" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
             <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
             {!isSidebarCollapsed && <span>Analytics</span>}
+          </a>
+          <a href="/admin/messages" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            {!isSidebarCollapsed && <span>Messages</span>}
+          </a>
+          <a href="/admin/announcements" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+            </svg>
+            {!isSidebarCollapsed && <span>Announcements</span>}
+          </a>
+          <a href="/admin/add-summary" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            {!isSidebarCollapsed && <span>Add Summary</span>}
+          </a>
+          <a href="/admin/add-questions" className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            {!isSidebarCollapsed && <span>Add Questions</span>}
           </a>
         </nav>
 
@@ -321,28 +345,61 @@ const AdminDashboard = () => {
 
             {/* Top Students */}
             <div className="bg-white rounded-2xl p-6">
-              <h3 className="text-lg font-semibold mb-6">Top Performers</h3>
-              <div className="space-y-4">
-                {topStudents.map((student, index) => (
-                  <div key={student.id} className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm ${
-                      index === 0 ? 'bg-yellow-400 text-yellow-900' :
-                      index === 1 ? 'bg-gray-300 text-gray-700' :
-                      index === 2 ? 'bg-orange-400 text-orange-900' :
-                      'bg-gray-100 text-gray-600'
-                    }`}>
-                      {index + 1}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm">{student.name}</h4>
-                      <p className="text-xs text-gray-500">{student.tests} tests completed</p>
-                    </div>
-                    <div className="text-sm font-semibold text-primary-600">
-                      {student.score}
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold">Top Performers</h3>
+                <a href="/admin/students" className="text-sm text-primary-600 hover:text-primary-700">
+                  View all →
+                </a>
               </div>
+              {loadingPerformers ? (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center gap-3 animate-pulse">
+                      <div className="w-8 h-8 rounded-full bg-gray-200"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-24"></div>
+                      </div>
+                      <div className="h-4 bg-gray-200 rounded w-12"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : topPerformers.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Award className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>No top performers yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {topPerformers.slice(0, 10).map((performer, index) => (
+                    <div
+                      key={performer.student.id}
+                      onClick={() => setSelectedPerformer(performer)}
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer group"
+                    >
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0 ${
+                        index === 0 ? 'bg-yellow-400 text-yellow-900' :
+                        index === 1 ? 'bg-gray-300 text-gray-700' :
+                        index === 2 ? 'bg-orange-400 text-orange-900' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">{performer.student.name}</h4>
+                        <p className="text-xs text-gray-500">{performer.stats.totalTests} tests • {performer.student.department || 'N/A'}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-primary-600">
+                          {performer.stats.averageScore}%
+                        </div>
+                        <div className="text-xs text-gray-500">avg score</div>
+                      </div>
+                      <Eye className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -409,6 +466,140 @@ const AdminDashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Performer Details Modal */}
+      {selectedPerformer && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white font-bold text-2xl">
+                    {selectedPerformer.student.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {selectedPerformer.student.name}
+                    </h2>
+                    <p className="text-gray-600">{selectedPerformer.student.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedPerformer(null)}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Performance Stats */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-primary-600" />
+                  Performance Statistics
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-600">Total Tests</p>
+                    <p className="text-2xl font-bold text-gray-900">{selectedPerformer.stats.totalTests}</p>
+                  </div>
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-gray-600">Avg Score</p>
+                    <p className="text-2xl font-bold text-blue-600">{selectedPerformer.stats.averageScore}%</p>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <p className="text-sm text-gray-600">Highest</p>
+                    <p className="text-2xl font-bold text-green-600">{selectedPerformer.stats.highestScore}%</p>
+                  </div>
+                  <div className="p-4 bg-orange-50 rounded-lg">
+                    <p className="text-sm text-gray-600">Lowest</p>
+                    <p className="text-2xl font-bold text-orange-600">{selectedPerformer.stats.lowestScore || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Course Performance */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {selectedPerformer.stats.mostTakenCourse && (
+                  <div className="p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BookOpen className="w-5 h-5 text-blue-600" />
+                      <h4 className="font-semibold text-gray-900">Most Taken Course</h4>
+                    </div>
+                    <p className="text-lg font-bold text-blue-600">
+                      {selectedPerformer.stats.mostTakenCourse.code}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {selectedPerformer.stats.mostTakenCourse.title}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {selectedPerformer.stats.mostTakenCourse.count} tests taken
+                    </p>
+                  </div>
+                )}
+
+                {selectedPerformer.stats.bestPerformingCourse && (
+                  <div className="p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Award className="w-5 h-5 text-green-600" />
+                      <h4 className="font-semibold text-gray-900">Best Performing Course</h4>
+                    </div>
+                    <p className="text-lg font-bold text-green-600">
+                      {selectedPerformer.stats.bestPerformingCourse.code}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {selectedPerformer.stats.bestPerformingCourse.title}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Average: {selectedPerformer.stats.bestPerformingCourse.average}%
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Highest Scoring Test */}
+              {selectedPerformer.stats.highestScoringTest && (
+                <div className="p-4 bg-yellow-50 rounded-lg border-2 border-yellow-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Award className="w-5 h-5 text-yellow-600" />
+                    <h4 className="font-semibold text-gray-900">Highest Scoring Test</h4>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {selectedPerformer.stats.highestScoringTest.course} - {selectedPerformer.stats.highestScoringTest.title}
+                      </p>
+                    </div>
+                    <span className="px-3 py-1 bg-yellow-200 text-yellow-900 rounded-full text-sm font-bold">
+                      {selectedPerformer.stats.highestScoringTest.score}%
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <a
+                  href={`/admin/students?student_id=${selectedPerformer.student.id}`}
+                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-center"
+                >
+                  View Full Profile
+                </a>
+                <button
+                  onClick={() => setSelectedPerformer(null)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
