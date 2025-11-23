@@ -88,30 +88,44 @@ const CBTResultsPage = () => {
       const question = questions[questionIndex];
       const userAnswer = userAnswers[questionIndex];
       
-      // Simulated AI explanation (replace with actual AI API call)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Import the API service
+      const { courseQuestionsAPI } = await import('../services/api');
       
-      const explanation = `
-**Why this answer is incorrect:**
-
-Your answer: "${getAnswerLabel(question, userAnswer)}"
-Correct answer: "${getAnswerLabel(question, question.correct_answer)}"
-
-${question.explanation || 'The correct answer provides the most accurate response based on the question context.'}
-
-**Key Concept:**
-${question.question_type === 'fill_in_blank' 
-  ? 'For fill-in-blank questions, the answer must match exactly (case-sensitive).'
-  : 'Multiple choice questions require selecting the most appropriate option from the given choices.'}
-
-**Study Tip:**
-Review the course material related to this topic to strengthen your understanding.
-      `.trim();
+      // Call the AI explanation API
+      const response = await courseQuestionsAPI.getAIExplanation({
+        questionId: question.id,
+        questionText: question.question_text,
+        questionType: question.question_type,
+        userAnswer: userAnswer || '',
+        correctAnswer: question.correct_answer,
+        options: {
+          option_a: question.option_a || undefined,
+          option_b: question.option_b || undefined,
+          option_c: question.option_c || undefined,
+          option_d: question.option_d || undefined,
+        },
+        courseId: course.id,
+      });
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      const explanation = response.explanation || 'Unable to generate explanation at this time.';
       
       setAiExplanation(prev => ({ ...prev, [questionIndex]: explanation }));
       setShowExplanation(questionIndex);
+      
+      // Show a subtle indicator if using fallback vs AI
+      if (response.source === 'fallback') {
+        toast('Using basic explanation. Contact admin to enable AI features.', {
+          icon: 'ℹ️',
+          duration: 3000,
+        });
+      }
     } catch (error) {
-      toast.error('Failed to generate explanation');
+      console.error('Error generating explanation:', error);
+      toast.error('Failed to generate explanation. Please try again.');
     } finally {
       setLoadingExplanation(null);
     }

@@ -82,12 +82,22 @@ const CBTPracticePage = () => {
   const filterCourses = () => {
     let filtered = courses;
 
-    // Search filter
+    // Search filter - now includes level and department with smart matching
     if (searchQuery) {
-      filtered = filtered.filter(course =>
-        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        course.code.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(course => {
+        // Normalize level for better matching (e.g., "200L" matches "200 Level")
+        const normalizedLevel = course.level.toLowerCase().replace(/\s+/g, '');
+        const normalizedQuery = query.replace(/\s+/g, '');
+        
+        return (
+          course.title.toLowerCase().includes(query) ||
+          course.code.toLowerCase().includes(query) ||
+          course.level.toLowerCase().includes(query) ||
+          normalizedLevel.includes(normalizedQuery) ||
+          course.department.toLowerCase().includes(query)
+        );
+      });
     }
 
     // Level filter

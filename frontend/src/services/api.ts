@@ -136,6 +136,28 @@ export const courseQuestionsAPI = {
         });
         return response.json();
     },
+
+    getAIExplanation: async (data: {
+        questionId: string;
+        questionText: string;
+        questionType: string;
+        userAnswer: string;
+        correctAnswer: string;
+        options?: {
+            option_a?: string;
+            option_b?: string;
+            option_c?: string;
+            option_d?: string;
+        };
+        courseId: string;
+    }) => {
+        const response = await fetch(`${FUNCTIONS_URL}/ai-explain-answer-groq`, {
+            method: 'POST',
+            headers: await getAuthHeaders(),
+            body: JSON.stringify(data),
+        });
+        return response.json();
+    },
 };
 
 // Courses APIs
@@ -404,11 +426,22 @@ export const settingsAPI = {
 
     // Update user profile
     updateProfile: async (profileData: { fullName: string; phone: string; department: string; level: string }) => {
-        const response = await fetch(`${FUNCTIONS_URL}/update-profile`, {
+        const response = await fetch(`${FUNCTIONS_URL}/update-user-profile`, {
             method: 'POST',
             headers: await getAuthHeaders(),
-            body: JSON.stringify(profileData),
+            body: JSON.stringify({
+                full_name: profileData.fullName,
+                phone: profileData.phone,
+                department: profileData.department,
+                level: profileData.level
+            }),
         });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to update profile');
+        }
+        
         return response.json();
     },
 
@@ -496,6 +529,52 @@ export const notesAPI = {
             method: 'DELETE',
             headers: await getAuthHeaders(),
         });
+        return response.json();
+    },
+};
+
+// Profile Image API
+export const profileImageAPI = {
+    // Upload profile image
+    uploadImage: async (file: File) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session?.access_token) {
+            throw new Error('No active session');
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch(`${FUNCTIONS_URL}/upload-profile-image`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${session.access_token}`,
+                'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to upload image');
+        }
+
+        return response.json();
+    },
+
+    // Delete profile image
+    deleteImage: async () => {
+        const response = await fetch(`${FUNCTIONS_URL}/upload-profile-image`, {
+            method: 'DELETE',
+            headers: await getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to delete image');
+        }
+
         return response.json();
     },
 };
