@@ -119,6 +119,45 @@ serve(async (req) => {
 
       if (error) throw error
 
+      console.log('✅ Announcement created:', announcement.id)
+      console.log('🎯 Target:', target)
+
+      // Create notifications for all users if target includes 'users' or 'both'
+      if (target === 'users' || target === 'both' || !target) {
+        console.log('📢 Creating notifications for users...')
+        const { data: users, error: usersError } = await supabaseClient
+          .from('profiles')
+          .select('id')
+          .eq('role', 'student')
+
+        if (usersError) {
+          console.error('❌ Error fetching users:', usersError)
+        } else {
+          console.log(`👥 Found ${users?.length || 0} students`)
+        }
+
+        if (users && users.length > 0) {
+          const notifications = users.map(u => ({
+            user_id: u.id,
+            type: 'announcement',
+            title: `📢 ${title}`,
+            message: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+            read: false,
+          }))
+
+          console.log(`📨 Inserting ${notifications.length} notifications...`)
+          const { error: notifError } = await supabaseClient
+            .from('notifications')
+            .insert(notifications)
+
+          if (notifError) {
+            console.error('❌ Error creating notifications:', notifError)
+          } else {
+            console.log('✅ Notifications created successfully')
+          }
+        }
+      }
+
       return new Response(JSON.stringify({ announcement, success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

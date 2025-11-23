@@ -65,13 +65,12 @@ const AdminAddQuestions = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const testData = {
-      ...testForm,
-      questions: questions,
-      totalQuestions: questions.length,
-    };
-    console.log('Test Data:', testData);
     // TODO: Backend API call - POST /api/admin/tests
+    // const testData = {
+    //   ...testForm,
+    //   questions: questions,
+    //   totalQuestions: questions.length,
+    // };
     alert('Test created successfully! (Backend integration pending)');
   };
 

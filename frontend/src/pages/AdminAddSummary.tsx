@@ -71,12 +71,11 @@ const AdminAddSummary = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const summaryData = {
-      ...summaryForm,
-      sections: sections
-    };
-    console.log('Summary Data:', summaryData);
     // TODO: Backend API call - POST /api/admin/summaries
+    // const summaryData = {
+    //   ...summaryForm,
+    //   sections: sections
+    // };
     alert('Summary created successfully! (Backend integration pending)');
   };
 

@@ -65,19 +65,18 @@ serve(async (req) => {
         })
       }
 
-      // Get student's test results
+      // Get student's test results from test_submissions
       const { data: testResults } = await supabaseClient
-        .from('test_results')
+        .from('test_submissions')
         .select(`
           *,
-          tests (
-            title,
-            course_code,
-            total_questions
+          courses (
+            code,
+            title
           )
         `)
         .eq('user_id', studentId)
-        .order('created_at', { ascending: false })
+        .order('submitted_at', { ascending: false })
 
       // Get student's summaries viewed
       const { data: summariesViewed } = await supabaseClient
@@ -110,7 +109,7 @@ serve(async (req) => {
       // Get most taken course
       const courseCounts: { [key: string]: number } = {}
       testResults?.forEach(test => {
-        const courseCode = test.tests?.course_code || 'Unknown'
+        const courseCode = test.courses?.code || 'Unknown'
         courseCounts[courseCode] = (courseCounts[courseCode] || 0) + 1
       })
       const mostTakenCourse = Object.keys(courseCounts).length > 0
@@ -120,7 +119,7 @@ serve(async (req) => {
       // Get highest scoring course
       const courseScores: { [key: string]: { total: number; count: number } } = {}
       testResults?.forEach(test => {
-        const courseCode = test.tests?.course_code || 'Unknown'
+        const courseCode = test.courses?.code || 'Unknown'
         if (!courseScores[courseCode]) {
           courseScores[courseCode] = { total: 0, count: 0 }
         }
@@ -177,7 +176,7 @@ serve(async (req) => {
     const studentsWithStats = await Promise.all(
       students.map(async (student) => {
         const { data: testResults } = await supabaseClient
-          .from('test_results')
+          .from('test_submissions')
           .select('score')
           .eq('user_id', student.id)
 

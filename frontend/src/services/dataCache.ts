@@ -20,18 +20,15 @@ class DataCacheService {
     // Check if data is in cache and not expired
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.timestamp < cached.expiresIn) {
-      console.log(`📦 Cache HIT for: ${key}`);
       return cached.data;
     }
 
     // Check if request is already pending (prevent duplicate requests)
     if (this.pendingRequests.has(key)) {
-      console.log(`⏳ Waiting for pending request: ${key}`);
       return this.pendingRequests.get(key)!;
     }
 
     // Fetch data
-    console.log(`🔄 Cache MISS, fetching: ${key}`);
     const promise = fetchFn()
       .then((data) => {
         // Store in cache
@@ -80,7 +77,6 @@ class DataCacheService {
    */
   invalidate(key: string): void {
     this.cache.delete(key);
-    console.log(`🗑️ Cache invalidated: ${key}`);
   }
 
   /**
@@ -91,7 +87,6 @@ class DataCacheService {
     for (const key of this.cache.keys()) {
       if (regex.test(key)) {
         this.cache.delete(key);
-        console.log(`🗑️ Cache invalidated: ${key}`);
       }
     }
   }
@@ -102,7 +97,6 @@ class DataCacheService {
   clear(): void {
     this.cache.clear();
     this.pendingRequests.clear();
-    console.log('🗑️ Cache cleared');
   }
 
   /**

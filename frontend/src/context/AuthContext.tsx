@@ -144,8 +144,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Prefetch commonly used data after login
     const prefetchUserData = async (userId: string) => {
-        console.log('🚀 Starting data prefetch for user:', userId);
-        
         // Prefetch dashboard stats
         dataCache.prefetch(
             CACHE_KEYS.USER_STATS(userId),
@@ -173,8 +171,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             () => coursesAPI.getAll(),
             CACHE_EXPIRY.VERY_LONG
         );
-
-        console.log('✅ Prefetch initiated');
     };
 
     const signIn = async (email: string, password: string) => {

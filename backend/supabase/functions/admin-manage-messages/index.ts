@@ -81,7 +81,13 @@ serve(async (req) => {
     if (req.method === 'POST') {
       const { name, email, subject, message, priority } = await req.json()
 
+      console.log('📧 Received contact form submission:')
+      console.log('Name:', name)
+      console.log('Email:', email)
+      console.log('Subject:', subject)
+
       if (!name || !email || !subject || !message) {
+        console.error('❌ Missing required fields')
         return new Response(JSON.stringify({ error: 'Missing required fields' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -111,6 +117,44 @@ serve(async (req) => {
 
       if (error) throw error
 
+      console.log('✅ Message saved to database:', newMessage.id)
+
+      // Create admin notification
+      // Get all admin users
+      const { data: admins, error: adminsError } = await supabaseClient
+        .from('profiles')
+        .select('id')
+        .eq('role', 'admin')
+
+      if (adminsError) {
+        console.error('❌ Error fetching admins:', adminsError)
+      } else {
+        console.log(`👥 Found ${admins?.length || 0} admins`)
+      }
+
+      if (admins && admins.length > 0) {
+        // Create notification for each admin
+        const notifications = admins.map(admin => ({
+          user_id: admin.id,
+          type: 'system',
+          title: `New message from ${name}`,
+          message: `${subject} - ${message.substring(0, 100)}${message.length > 100 ? '...' : ''}`,
+          read: false,
+        }))
+
+        console.log(`📨 Creating ${notifications.length} admin notifications...`)
+        const { error: notifError } = await supabaseClient
+          .from('notifications')
+          .insert(notifications)
+
+        if (notifError) {
+          console.error('❌ Error creating admin notifications:', notifError)
+        } else {
+          console.log('✅ Admin notifications created successfully')
+        }
+      }
+
+      console.log('✅ Contact form submission completed successfully')
       return new Response(JSON.stringify({ message: newMessage, success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })

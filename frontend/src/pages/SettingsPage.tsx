@@ -382,7 +382,7 @@ const SettingsPage = () => {
                 </div>
                 <div>
                   <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{profileData.fullName || 'User'}</h2>
-                  <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{profileData.email}</p>
+                  <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>{profileData.email}</p>
                   {uploadingImage && (
                     <p className="text-sm text-primary-600 mt-1">Uploading...</p>
                   )}

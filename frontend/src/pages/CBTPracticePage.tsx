@@ -73,7 +73,6 @@ const CBTPracticePage = () => {
       setFilteredCourses(coursesWithCounts);
     } catch (error: any) {
       toast.error('Failed to load courses');
-      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -129,7 +128,19 @@ const CBTPracticePage = () => {
 
   const getLevels = () => {
     const levels = new Set(courses.map(c => c.level));
-    return Array.from(levels).sort();
+    const levelArray = Array.from(levels);
+    
+    // Remove duplicates like "200" if "200 Level" exists
+    const filtered = levelArray.filter(level => {
+      // If this is just a number (like "200"), check if there's a "XXX Level" version
+      if (/^\d+$/.test(level)) {
+        const levelVersion = `${level} Level`;
+        return !levelArray.includes(levelVersion);
+      }
+      return true;
+    });
+    
+    return filtered.sort();
   };
 
   const getColorForDepartment = (department: string) => {
@@ -231,7 +242,7 @@ const CBTPracticePage = () => {
               <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 No courses found
               </h3>
-              <p className={`mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+              <p className={`mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Try adjusting your filters
               </p>
             </div>

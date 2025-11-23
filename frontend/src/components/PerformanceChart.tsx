@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { dashboardAPI } from '../services/api';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 
 interface ChartData {
   date: string;
@@ -136,17 +136,17 @@ const PerformanceChart = () => {
           
           <button
             onClick={() => {
-              console.log('🔄 Manual refresh triggered');
               setLoading(true);
               fetchChartData();
             }}
-            className={`px-3 py-1 border rounded-lg text-sm ${
+            className={`px-3 py-1 border rounded-lg text-sm flex items-center gap-2 ${
               isDarkMode 
                 ? 'bg-gray-700 text-white border-gray-600 hover:bg-gray-600' 
                 : 'bg-white border-gray-300 hover:bg-gray-50'
             } transition-colors`}
           >
-            🔄 Refresh
+            <RefreshCw size={14} />
+            Refresh
           </button>
         </div>
         <div className="h-64 flex items-center justify-center">
@@ -154,7 +154,7 @@ const PerformanceChart = () => {
             <p className={`text-lg font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               No test data yet
             </p>
-            <p className={`text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Take your first test to see your performance chart!
             </p>
           </div>
@@ -188,17 +188,17 @@ const PerformanceChart = () => {
           
           <button
             onClick={() => {
-              console.log('🔄 Manual refresh triggered');
               setLoading(true);
               fetchChartData();
             }}
-            className={`px-3 py-1 border rounded-lg text-sm ${
+            className={`px-3 py-1 border rounded-lg text-sm flex items-center gap-2 ${
               isDarkMode 
                 ? 'bg-gray-700 text-white border-gray-600 hover:bg-gray-600' 
                 : 'bg-white border-gray-300 hover:bg-gray-50'
             } transition-colors`}
           >
-            🔄 Refresh
+            <RefreshCw size={14} />
+            Refresh
           </button>
           
           <select 

@@ -210,7 +210,7 @@ const SummariesPage = () => {
           <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             No summaries found
           </h3>
-          <p className={`mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+          <p className={`mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             Try adjusting your filters
           </p>
         </div>

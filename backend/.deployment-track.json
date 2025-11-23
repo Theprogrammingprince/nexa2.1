@@ -30,17 +30,21 @@
     "update-user-settings": "{\"index.ts\":\"734d1c40c721e6ec9b37bc3f19d3e3dc\"}",
     "get-performance-chart": "{\"index.ts\":\"34e63b63acb00621faeab8db77d8cc2a\"}",
     "admin-analytics": "{\"index.ts\":\"c79b0333983752614ace79fed8a89dd6\"}",
-    "admin-get-students": "{\"index.ts\":\"0a05b35313ab1a5119c019ed8ff6cce3\"}",
-    "admin-manage-announcements": "{\"index.ts\":\"e1afdb766c77f3a7ae1be8a8726a14ba\"}",
-    "admin-manage-messages": "{\"index.ts\":\"26629c6554be148f4a90ca1599140942\"}",
+    "admin-get-students": "{\"index.ts\":\"07a3273339a02a57b4228a29a42c4f1f\"}",
+    "admin-manage-announcements": "{\"index.ts\":\"2e4ec53a0f93614da817d9e9df253564\"}",
+    "admin-manage-messages": "{\"index.ts\":\"031e2588c1d4f6ffc590deda3663aae8\"}",
     "admin-notifications": "{\"index.ts\":\"eb95f9627d5eba4e1fec0caec5a0470a\"}",
     "admin-top-performers": "{\"index.ts\":\"063abc54739cdf0210dc213540a31f05\"}",
     "check-event-reminders": "{\"index.ts\":\"c6a342f1a40db9fce856c89774ba28cd\"}",
     "create-checkout-session": "{\"index.ts\":\"d3ca836173dda44f1c1617facac2dc8d\"}",
-    "forgot-password": "{\"index.ts\":\"dca903d6780d6fc692bbb1380bce7d84\"}",
+    "forgot-password": "{\"index.ts\":\"a2e49b3208cc0a801654d3e47b56ad62\"}",
     "get-user-subscription": "{\"index.ts\":\"e1f002860444d9987939a8a05d7091db\"}",
-    "manage-notes": "{\"index.ts\":\"d22b16f3570fad03e0ee4f9235272dac\"}",
+    "manage-notes": "{\"index.ts\":\"a113e84a695b8d3c0918fde80816176a\"}",
     "manage-subscription": "{\"index.ts\":\"ce1bfbfbe05ef6e653dac8242ae55bcc\"}",
-    "stripe-webhook": "{\"index.ts\":\"a878d2f7702e9acbb1b840e58611a344\"}"
+    "stripe-webhook": "{\"index.ts\":\"a878d2f7702e9acbb1b840e58611a344\"}",
+    "ai-explain-answer": "{\"index.ts\":\"44a782ebe9679702fd9e35d7be8f5ca9\"}",
+    "ai-explain-answer-gemini": "{\"index.ts\":\"8ab354c6d1a860dba1ba43511db234a4\"}",
+    "ai-explain-answer-groq": "{\"index.ts\":\"3e9b3b2b33ee5865649fab08e336c5ee\"}",
+    "upload-profile-image": "{\"index.ts\":\"b9bcbb3d9f0f8d702075322e8c2c02a3\"}"
   }
 }
