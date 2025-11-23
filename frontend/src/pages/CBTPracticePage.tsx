@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import supabase from '../supabaseClient';
-import { courseQuestionsAPI } from '../services/api';
 import toast, { Toaster } from 'react-hot-toast';
 import DashboardLayout from '../components/DashboardLayout';
-import { BookOpen, Clock, FileText, Search, Filter } from 'lucide-react';
+import CourseCard from '../components/CourseCard';
+import { useCoursesWithCounts } from '../hooks/useCourses';
+import { useDebounce } from '../hooks/useDebounce';
+import { BookOpen, Search, Filter } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -22,68 +23,29 @@ const CBTPracticePage = () => {
   const { isDarkMode } = useTheme();
   const navigate = useNavigate();
   
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Fetch courses with React Query (cached and optimized)
+  const { courses, isLoading, error } = useCoursesWithCounts();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedSemester, setSelectedSemester] = useState('all');
+  
+  // Debounce search query to reduce filtering operations
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  useEffect(() => {
-    fetchCourses();
-  }, []);
+  // Show error toast if courses fail to load
+  if (error) {
+    toast.error('Failed to load courses');
+  }
 
-  useEffect(() => {
-    filterCourses();
-  }, [searchQuery, selectedLevel, selectedDepartment, selectedSemester, courses]);
-
-  const fetchCourses = async () => {
-    try {
-      // Fetch courses directly from Supabase (public data)
-      const { data, error } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('is_active', true)
-        .order('level', { ascending: true })
-        .order('code', { ascending: true });
-
-      if (error) throw error;
-
-      // Fetch question counts for each course using the API
-      const coursesWithCounts = await Promise.all(
-        (data || []).map(async (course) => {
-          try {
-            const response = await courseQuestionsAPI.getQuestionCount(course.id);
-            return {
-              ...course,
-              question_count: response.count || 0
-            };
-          } catch (error) {
-            console.error(`Error fetching count for ${course.code}:`, error);
-            return {
-              ...course,
-              question_count: 0
-            };
-          }
-        })
-      );
-
-      setCourses(coursesWithCounts);
-      setFilteredCourses(coursesWithCounts);
-    } catch (error: any) {
-      toast.error('Failed to load courses');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterCourses = () => {
+  // Memoized filtering logic - only recalculates when dependencies change
+  const filteredCourses = useMemo(() => {
     let filtered = courses;
 
     // Search filter - now includes level and department with smart matching
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase().trim();
+    if (debouncedSearchQuery) {
+      const query = debouncedSearchQuery.toLowerCase().trim();
       filtered = filtered.filter(course => {
         // Normalize level for better matching (e.g., "200L" matches "200 Level")
         const normalizedLevel = course.level?.toLowerCase().replace(/\s+/g, '') || '';
@@ -114,21 +76,24 @@ const CBTPracticePage = () => {
       filtered = filtered.filter(course => course.semester === parseInt(selectedSemester));
     }
 
-    setFilteredCourses(filtered);
-  };
+    return filtered;
+  }, [courses, debouncedSearchQuery, selectedLevel, selectedDepartment, selectedSemester]);
 
-  const handleCourseClick = (course: Course) => {
+  // Memoized callback to prevent unnecessary re-renders
+  const handleCourseClick = useCallback((course: Course) => {
     navigate(`/cbt/instruction/${course.id}`);
-  };
+  }, [navigate]);
 
-  const getDepartments = () => {
-    const departments = new Set(courses.map(c => c.department));
-    return Array.from(departments).sort();
-  };
+  // Memoized departments list
+  const departments = useMemo(() => {
+    const depts = new Set(courses.map(c => c.department));
+    return Array.from(depts).sort();
+  }, [courses]);
 
-  const getLevels = () => {
-    const levels = new Set(courses.map(c => c.level));
-    const levelArray = Array.from(levels);
+  // Memoized levels list
+  const levels = useMemo(() => {
+    const lvls = new Set(courses.map(c => c.level));
+    const levelArray = Array.from(lvls);
     
     // Remove duplicates like "200" if "200 Level" exists
     const filtered = levelArray.filter(level => {
@@ -141,7 +106,7 @@ const CBTPracticePage = () => {
     });
     
     return filtered.sort();
-  };
+  }, [courses]);
 
   const getColorForDepartment = (department: string) => {
     const colors: { [key: string]: string } = {
@@ -155,7 +120,7 @@ const CBTPracticePage = () => {
     return colors[department] || 'from-gray-500 to-gray-600';
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center">
@@ -194,7 +159,7 @@ const CBTPracticePage = () => {
                   className={`w-full px-4 py-2 rounded-lg border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:ring-2 focus:ring-primary-500 focus:border-transparent`}
                 >
                   <option value="all">All Levels</option>
-                  {getLevels().map(level => (
+                  {levels.map(level => (
                     <option key={level} value={level}>{level}</option>
                   ))}
                 </select>
@@ -208,7 +173,7 @@ const CBTPracticePage = () => {
                   className={`w-full px-4 py-2 rounded-lg border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:ring-2 focus:ring-primary-500 focus:border-transparent`}
                 >
                   <option value="all">All Departments</option>
-                  {getDepartments().map(dept => (
+                  {departments.map(dept => (
                     <option key={dept} value={dept}>{dept}</option>
                   ))}
                 </select>
@@ -249,63 +214,13 @@ const CBTPracticePage = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCourses.map((course) => (
-                <div
+                <CourseCard
                   key={course.id}
-                  onClick={() => handleCourseClick(course)}
-                  className={`${isDarkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-xl'} rounded-xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 transform hover:-translate-y-1`}
-                >
-                  {/* Course Header with Gradient */}
-                  <div className={`bg-gradient-to-r ${getColorForDepartment(course.department)} p-6 text-white`}>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-lg font-bold mb-1">{course.code}</h3>
-                        <p className="text-sm opacity-90">{course.level}</p>
-                      </div>
-                      <div className="bg-white bg-opacity-20 rounded-lg px-3 py-1">
-                        <p className="text-xs font-semibold">Sem {course.semester}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Course Body */}
-                  <div className="p-6">
-                    <h4 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-3 line-clamp-2`}>
-                      {course.title}
-                    </h4>
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm">
-                        <BookOpen size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
-                        <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                          {course.department}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <FileText size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
-                        <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                          {course.question_count || 0} Questions Available
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
-                        <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                          {course.credits} Credit Units
-                        </span>
-                      </div>
-                    </div>
-
-                    <button
-                      className={`w-full py-2 rounded-lg font-semibold transition-colors ${
-                        course.question_count && course.question_count > 0
-                          ? 'bg-primary-600 text-white hover:bg-primary-700'
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      }`}
-                      disabled={!course.question_count || course.question_count === 0}
-                    >
-                      {course.question_count && course.question_count > 0 ? 'Start Practice' : 'Coming Soon'}
-                    </button>
-                  </div>
-                </div>
+                  course={course}
+                  isDarkMode={isDarkMode}
+                  onCourseClick={handleCourseClick}
+                  getColorForDepartment={getColorForDepartment}
+                />
               ))}
             </div>
           )}
