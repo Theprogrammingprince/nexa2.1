@@ -3,9 +3,9 @@
 
 INSERT INTO courses (code, title, description, level,credit,active, created_at)
 VALUES (
-  'GST203',
-  'Introduction to Philosophy and Logic',
-  'A foundational course covering the basic concepts of philosophy, branches of philosophy (Metaphysics, Epistemology, Axiology, Logic), and the principles of logical reasoning including propositional logic, laws of thought, and common logical fallacies.',
+  'MAC212',
+  ' Media and Society',
+  'Media and Society is a course that delves into the study of how media shape society by examining the various forms of media and how they are used to convey messages and influence public opinion. The course focuses on critical thinking, analytical skills, and the development of a more sophisticated understanding of the complex interactions between media and society.',
   200,
   2,
   TRUE,

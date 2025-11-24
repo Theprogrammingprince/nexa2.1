@@ -19,17 +19,15 @@ export default defineConfig({
     },
     // Optimize chunk size
     chunkSizeWarningLimit: 1000,
-    // Enable minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.logs in production
-        drop_debugger: true,
-      },
-    },
+    // Enable minification (esbuild is faster and works well)
+    minify: 'esbuild',
   },
   // Enable optimizations
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+  },
+  esbuild: {
+    // Remove console.logs and debugger in production
+    drop: ['console', 'debugger'],
   },
 })
