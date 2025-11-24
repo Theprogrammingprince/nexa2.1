@@ -1,21 +1,29 @@
 ﻿DO $$
 DECLARE
-v_course_id UUID;
+    v_course_id UUID;
 BEGIN
-SELECT id INTO v_course_id FROM courses WHERE code = 'MTH281' LIMIT 1;
+    SELECT id INTO v_course_id FROM courses WHERE code = 'MTH281' LIMIT 1;
+    
+    IF v_course_id IS NULL THEN
+        RAISE EXCEPTION 'Course MTH281 not found. Please run course population migration first.';
+    END IF;
 
--- Q1 - Multiple choice
-INSERT INTO questions (course_id, question_text, question_type, option_a, option_b, option_c, option_d, correct_answer, explanation)
-VALUES (v_course_id, 'What does the limit of f(x) as x approaches a represent?', 'multiple_choice',
-'The value of f(a)', 'The value f(x) approaches as x gets close to a', 'The derivative at x = a', 'The integral from 0 to a', 'B',
-'The limit represents the value that f(x) approaches as x gets sufficiently near to point a.');
+    -- Q1 - Multiple choice
+    INSERT INTO questions (course_id, question_text, question_type, option_a, option_b, option_c, option_d, correct_answer, explanation)
+    VALUES (v_course_id, 'What does the limit of f(x) as x approaches a represent?', 'multiple_choice',
+    'The value of f(a)', 'The value f(x) approaches as x gets close to a', 'The derivative at x = a', 'The integral from 0 to a', 'B',
+    'The limit represents the value that f(x) approaches as x gets sufficiently near to point a.');
 
--- Q2 - Multiple choice
-INSERT INTO questions (course_id, question_text, question_type, option_a, option_b, option_c, option_d, correct_answer, explanation)
-VALUES (v_course_id, 'A function f(x) is continuous at x = a if which conditions are met?', 'multiple_choice',
-'Only f(a) exists', 'The limit exists and equals f(a)', 'f(x) is differentiable at a', 'f(x) is integrable at a', 'B',
-'A function is continuous at x = a if the limit exists, the function is defined at a, and the limit equals f(a).');
+    -- Q2 - Multiple choice
+    INSERT INTO questions (course_id, question_text, question_type, option_a, option_b, option_c, option_d, correct_answer, explanation)
+    VALUES (v_course_id, 'A function f(x) is continuous at x = a if which conditions are met?', 'multiple_choice',
+    'Only f(a) exists', 'The limit exists and equals f(a)', 'f(x) is differentiable at a', 'f(x) is integrable at a', 'B',
+    'A function is continuous at x = a if the limit exists, the function is defined at a, and the limit equals f(a).');
 
+    -- Q3 - Fill in the blank
+    INSERT INTO questions (course_id, question_text, question_type, correct_answer, explanation)
+    VALUES (v_course_id, 'The differential coefficient of y with respect to x is denoted by the symbol ____.', 'fill_in_blank', 'dy/dx',
+    'The differential coefficient is commonly written as dy/dx or f''(x).');
 -- Q3 - Fill in the blank
 INSERT INTO questions (course_id, question_text, question_type, correct_answer, explanation)
 VALUES (v_course_id, 'The differential coefficient of y with respect to x is denoted by the symbol ____.', 'fill_in_blank', 'dy/dx',
@@ -281,8 +289,8 @@ VALUES (v_course_id, 'The comparison test for series states that if 0 ≤ ar ≤
 'By the comparison test, if ar ≤ br and Σbr converges, then Σar also converges.');
 
 -- Q49 - Multiple choice
-INSERT INTO questions (course_id, questioINSERT INTO questions (course_id, question_text, question_type, correct_answer, explanation)
-VALUES (v_course_id, 'The series 1 - 1/2 + 1/3 - 1/4 + ... converges to ____.', 'fill_in_blank', 'ln 2',
+INSERT INTO questions (course_id, question_text, question_type, option_a, option_b, option_c, option_d, correct_answer, explanation)
+VALUES (v_course_id, 'The series 1 - 1/2 + 1/3 - 1/4 + ... converges to ____.', 'multiple_choice', 'ln 2', 'ln 3', 'ln 4', 'ln 5', 'A',
 'The alternating harmonic series converges to the natural logarithm of 2.');
 -- Q60 - Multiple choice
 INSERT INTO questions (course_id, question_text, question_type, option_a, option_b, option_c, option_d, correct_answer, explanation)
@@ -532,5 +540,4 @@ INSERT INTO questions (course_id, question_text, question_type, option_a, option
 VALUES (v_course_id, 'For conditionally convergent series, rearranging terms can:', 'multiple_choice',
 'Not change the sum', 'Change the sum', 'Always cause divergence', 'Make it absolutely convergent', 'B',
 'Rearranging terms in conditionally convergent series can alter the sum or cause divergence.');
-
-END $$
+END $$;

@@ -408,7 +408,7 @@ const CBTTestPage = () => {
                               isSelected
                                 ? isDarkMode
                                   ? 'bg-green-500 text-white'
-                                  : 'bg-primary-600 text-white'
+                                  : 'bg-green-600 text-white'
                                 : isDarkMode
                                 ? 'bg-gray-600 text-gray-300'
                                 : 'bg-gray-200 text-gray-700'
@@ -453,7 +453,7 @@ const CBTTestPage = () => {
                   ) : (
                     <button
                       onClick={handleNextQuestion}
-                      className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700"
+                      className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-green-600 rounded-lg font-semibold hover:bg-primary-700"
                     >
                       Next
                       <ChevronRight size={20} />
@@ -479,7 +479,7 @@ const CBTTestPage = () => {
                       onClick={() => setCurrentQuestionIndex(index)}
                       className={`w-10 h-10 rounded-lg font-semibold text-sm ${
                         index === currentQuestionIndex
-                          ? 'bg-primary-600 text-white'
+                          ? 'bg-green-600 text-white'
                           : answers[index]
                           ? 'bg-green-500 text-white'
                           : isDarkMode

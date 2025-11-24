@@ -43,7 +43,7 @@ const CourseCard = memo(({ course, isDarkMode, onCourseClick, getColorForDepartm
                 <p className="text-sm opacity-90">{course.level}</p>
               </div>
               <div className="bg-white bg-opacity-20 rounded-lg px-3 py-1">
-                <p className="text-xs font-semibold">Sem {course.semester}</p>
+                <p className="text-xs text-gray-600 font-semibold">Sem {course.semester}</p>
               </div>
             </div>
           </div>
@@ -78,7 +78,7 @@ const CourseCard = memo(({ course, isDarkMode, onCourseClick, getColorForDepartm
             <button
               className={`w-full py-2 rounded-lg font-semibold transition-colors ${
                 course.question_count && course.question_count > 0
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
+                  ? 'bg-green-600 text-white hover:bg-primary-700'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
               disabled={!course.question_count || course.question_count === 0}
