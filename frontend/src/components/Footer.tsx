@@ -53,9 +53,7 @@
           {/* Brand Section */}
           <div className="lg:col-span-1 flex flex-col justify-start">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">N</span>
-              </div>
+              <img src="/logo.png" alt="NEXA Logo" className="w-10 h-10 object-contain" />
               <div>
                 <h3 className="font-bold text-lg">NEXA</h3>
                 <p className="text-xs text-gray-400">Exam Success Platform</p>

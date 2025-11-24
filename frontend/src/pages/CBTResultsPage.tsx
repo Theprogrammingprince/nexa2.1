@@ -47,6 +47,23 @@ const CBTResultsPage = () => {
     }
   }, [resultsData, navigate]);
 
+  // Handle browser back button - redirect to CBT page instead of test page
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      event.preventDefault();
+      navigate('/cbt', { replace: true });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Replace current history entry to prevent going back to test
+    window.history.pushState(null, '', window.location.pathname);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [navigate]);
+
   if (!resultsData) return null;
 
   const { score, correctCount, totalQuestions, timeTaken, questions, userAnswers, course } = resultsData;

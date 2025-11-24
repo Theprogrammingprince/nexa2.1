@@ -21,9 +21,7 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center gap-3">
-              <div className="w-11 h-11 bg-gradient-to-br from-teal-600 to-cyan-600 rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-xl">N</span>
-              </div>
+              <img src="/logo.png" alt="NEXA Logo" className="w-9 h-9 object-contain" />
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-gray-900">NEXA</h1>
                 <p className="text-xs text-gray-500 -mt-1">Exam Success Platform</p>

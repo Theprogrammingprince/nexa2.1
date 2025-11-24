@@ -28,10 +28,8 @@ const DashboardLayout = ({ children, currentPage }: DashboardLayoutProps) => {
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         <div className="p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">N</span>
-            </div>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="NEXA Logo" className="w-8 h-8 object-contain" />
             <span className="text-xl font-bold">NEXA</span>
           </div>
         </div>

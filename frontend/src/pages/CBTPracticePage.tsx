@@ -4,6 +4,8 @@ import { useTheme } from '../context/ThemeContext';
 import toast, { Toaster } from 'react-hot-toast';
 import DashboardLayout from '../components/DashboardLayout';
 import CourseCard from '../components/CourseCard';
+import OnboardingTutorial from '../components/OnboardingTutorial';
+import Tooltip from '../components/Tooltip';
 import { useCoursesWithCounts } from '../hooks/useCourses';
 import { useDebounce } from '../hooks/useDebounce';
 import { BookOpen, Search, Filter } from 'lucide-react';
@@ -30,6 +32,50 @@ const CBTPracticePage = () => {
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedSemester, setSelectedSemester] = useState('all');
+
+  // Tutorial steps for onboarding
+  const tutorialSteps = [
+    {
+      title: 'Browse Courses',
+      subtitle: 'Available Courses',
+      description: 'Browse through all your registered NOUN courses. Each card displays the course code, title, and number of available practice questions.',
+      image: '/onboarding/courses.png',
+      buttonText: 'View Courses',
+      buttonColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
+    },
+    {
+      title: 'Search & Filter',
+      subtitle: 'Find Your Course',
+      description: 'Use the powerful search and filter options to quickly find courses by name, level, department, or semester.',
+      image: '/onboarding/search.png',
+      buttonText: 'Try Search',
+      buttonColor: 'bg-gradient-to-r from-purple-500 to-purple-600',
+    },
+    {
+      title: 'Start Practice Test',
+      subtitle: 'Begin Testing',
+      description: 'Click on any course to view instructions and start a timed practice test. Customize the number of questions and duration.',
+      image: '/onboarding/test.png',
+      buttonText: 'Start Test',
+      buttonColor: 'bg-gradient-to-r from-green-500 to-green-600',
+    },
+    {
+      title: 'View Results',
+      subtitle: 'Track Performance',
+      description: 'After completing tests, review detailed results with correct answers and explanations. Track your progress over time.',
+      image: '/onboarding/results.png',
+      buttonText: 'View Results',
+      buttonColor: 'bg-gradient-to-r from-orange-500 to-orange-600',
+    },
+    {
+      title: 'AI Explanations',
+      subtitle: 'Learn Better',
+      description: 'Get instant AI-powered explanations for questions you got wrong. Nexa AI helps you understand concepts deeply.',
+      image: '/onboarding/ai.png',
+      buttonText: 'Try AI',
+      buttonColor: 'bg-gradient-to-r from-pink-500 to-pink-600',
+    },
+  ];
   
   // Debounce search query to reduce filtering operations
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -120,6 +166,11 @@ const CBTPracticePage = () => {
     return colors[department] || 'from-gray-500 to-gray-600';
   };
 
+  const restartTutorial = () => {
+    localStorage.removeItem('cbt-tutorial-completed');
+    window.location.reload();
+  };
+
   if (isLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -134,6 +185,12 @@ const CBTPracticePage = () => {
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} />
+      <OnboardingTutorial
+        steps={tutorialSteps}
+        onComplete={() => toast.success('Welcome to NEXA CBT Practice! 🎉')}
+        onSkip={() => toast('You can restart the tutorial anytime from settings', { icon: 'ℹ️' })}
+        storageKey="cbt-tutorial-completed"
+      />
       <DashboardLayout currentPage="/cbt">
           <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-sm p-6`}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -148,6 +205,9 @@ const CBTPracticePage = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={`w-full pl-10 pr-4 py-2 rounded-lg border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'} focus:ring-2 focus:ring-primary-500 focus:border-transparent`}
                   />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Tooltip content="Search by course code, title, level, or department" position="bottom" />
+                  </div>
                 </div>
               </div>
 
@@ -193,9 +253,20 @@ const CBTPracticePage = () => {
               </div>
             </div>
 
-            <div className={`mt-4 flex items-center gap-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              <Filter size={16} />
-              <span>Showing {filteredCourses.length} of {courses.length} courses</span>
+            <div className={`mt-4 flex items-center justify-between text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              <div className="flex items-center gap-2">
+                <Filter size={16} />
+                <span>Showing {filteredCourses.length} of {courses.length} courses</span>
+              </div>
+              <button
+                onClick={restartTutorial}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                <BookOpen size={14} />
+                Tutorial
+              </button>
             </div>
           </div>
 
