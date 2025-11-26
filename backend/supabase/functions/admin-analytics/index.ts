@@ -50,17 +50,15 @@ serve(async (req) => {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-    // Total users
+    // Total users (all profiles)
     const { count: totalUsers } = await supabaseClient
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('role', 'student')
 
     // New users (last 30 days)
     const { count: newUsers } = await supabaseClient
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('role', 'student')
       .gte('created_at', thirtyDaysAgo.toISOString())
 
     // Active users (last 7 days)
@@ -71,20 +69,20 @@ serve(async (req) => {
 
     const activeUsers = new Set(recentActivity?.map(a => a.user_id)).size
 
-    // Total tests taken
+    // Total tests taken (use test_submissions table)
     const { count: totalTests } = await supabaseClient
-      .from('test_results')
+      .from('test_submissions')
       .select('*', { count: 'exact', head: true })
 
     // Tests taken (last 30 days)
     const { count: recentTests } = await supabaseClient
-      .from('test_results')
+      .from('test_submissions')
       .select('*', { count: 'exact', head: true })
-      .gte('created_at', thirtyDaysAgo.toISOString())
+      .gte('submitted_at', thirtyDaysAgo.toISOString())
 
     // Average score
     const { data: allTestResults } = await supabaseClient
-      .from('test_results')
+      .from('test_submissions')
       .select('score')
 
     const averageScore = allTestResults && allTestResults.length > 0
@@ -100,16 +98,15 @@ serve(async (req) => {
     const { count: premiumUsers } = await supabaseClient
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-      .eq('role', 'student')
       .eq('subscription_tier', 'pro')
 
-    // Support messages
+    // Support messages (use contact_messages table)
     const { count: totalMessages } = await supabaseClient
-      .from('support_messages')
+      .from('contact_messages')
       .select('*', { count: 'exact', head: true })
 
     const { count: unreadMessages } = await supabaseClient
-      .from('support_messages')
+      .from('contact_messages')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'unread')
 
@@ -122,7 +119,6 @@ serve(async (req) => {
       const { count } = await supabaseClient
         .from('profiles')
         .select('*', { count: 'exact', head: true })
-        .eq('role', 'student')
         .gte('created_at', monthStart.toISOString())
         .lte('created_at', monthEnd.toISOString())
 
@@ -139,10 +135,10 @@ serve(async (req) => {
       const dayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i + 1)
       
       const { count } = await supabaseClient
-        .from('test_results')
+        .from('test_submissions')
         .select('*', { count: 'exact', head: true })
-        .gte('created_at', dayStart.toISOString())
-        .lt('created_at', dayEnd.toISOString())
+        .gte('submitted_at', dayStart.toISOString())
+        .lt('submitted_at', dayEnd.toISOString())
 
       testActivity.push({
         date: dayStart.toISOString().split('T')[0],
@@ -152,18 +148,19 @@ serve(async (req) => {
 
     // Most popular courses
     const { data: testsByCourse } = await supabaseClient
-      .from('test_results')
+      .from('test_submissions')
       .select(`
-        tests (
-          course_code,
+        course_id,
+        courses (
+          code,
           title
         )
       `)
 
     const courseCounts: { [key: string]: { count: number; title: string } } = {}
     testsByCourse?.forEach((test: any) => {
-      const courseCode = test.tests?.course_code || 'Unknown'
-      const title = test.tests?.title || 'Unknown'
+      const courseCode = test.courses?.code || 'Unknown'
+      const title = test.courses?.title || 'Unknown'
       if (!courseCounts[courseCode]) {
         courseCounts[courseCode] = { count: 0, title }
       }

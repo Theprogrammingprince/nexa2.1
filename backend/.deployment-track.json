@@ -31,9 +31,9 @@
     "get-performance-chart": "{\"index.ts\":\"34e63b63acb00621faeab8db77d8cc2a\"}",
     "admin-analytics": "{\"index.ts\":\"c79b0333983752614ace79fed8a89dd6\"}",
     "admin-get-students": "{\"index.ts\":\"07a3273339a02a57b4228a29a42c4f1f\"}",
-    "admin-manage-announcements": "{\"index.ts\":\"2e4ec53a0f93614da817d9e9df253564\"}",
-    "admin-manage-messages": "{\"index.ts\":\"031e2588c1d4f6ffc590deda3663aae8\"}",
-    "admin-notifications": "{\"index.ts\":\"eb95f9627d5eba4e1fec0caec5a0470a\"}",
+    "admin-manage-announcements": "{\"index.ts\":\"bfee2e0b397902b7505aca78a5fb036e\"}",
+    "admin-manage-messages": "{\"index.ts\":\"4f1542c9d58a78428f90b90bb746fbc7\"}",
+    "admin-notifications": "{\"index.ts\":\"cd30ea043a1f83b7f458f17d9a875e03\"}",
     "admin-top-performers": "{\"index.ts\":\"063abc54739cdf0210dc213540a31f05\"}",
     "check-event-reminders": "{\"index.ts\":\"c6a342f1a40db9fce856c89774ba28cd\"}",
     "create-checkout-session": "{\"index.ts\":\"d3ca836173dda44f1c1617facac2dc8d\"}",
@@ -45,6 +45,8 @@
     "ai-explain-answer": "{\"index.ts\":\"44a782ebe9679702fd9e35d7be8f5ca9\"}",
     "ai-explain-answer-gemini": "{\"index.ts\":\"8ab354c6d1a860dba1ba43511db234a4\"}",
     "ai-explain-answer-groq": "{\"index.ts\":\"3e9b3b2b33ee5865649fab08e336c5ee\"}",
-    "upload-profile-image": "{\"index.ts\":\"b9bcbb3d9f0f8d702075322e8c2c02a3\"}"
+    "upload-profile-image": "{\"index.ts\":\"b9bcbb3d9f0f8d702075322e8c2c02a3\"}",
+    "blog-posts": "{\"index.ts\":\"c7db9d610968058b75e315bfb7ee1d99\"}",
+    "submit-contact": "{\"index.ts\":\"cd3c0b5d46947f090f8ef3a1757ba748\"}"
   }
 }

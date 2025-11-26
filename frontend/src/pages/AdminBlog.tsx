@@ -14,6 +14,10 @@ import {
   X,
   Save,
   FileText,
+  Calendar,
+  User,
+  Tag,
+  Star,
 } from 'lucide-react';
 
 interface BlogPost {
@@ -34,7 +38,7 @@ interface BlogPost {
   published_at?: string;
 }
 
-const AdminBlog = () => {
+const AdminBlogImproved = () => {
   const { isDarkMode } = useTheme();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
@@ -148,7 +152,6 @@ const AdminBlog = () => {
     setSaving(true);
     try {
       if (editingPost) {
-        // Update existing post
         const { error } = await supabase
           .from('blog_posts')
           .update({
@@ -161,10 +164,8 @@ const AdminBlog = () => {
           .eq('id', editingPost.id);
 
         if (error) throw error;
-
         toast.success('Blog post updated successfully!');
       } else {
-        // Create new post
         const { error } = await supabase
           .from('blog_posts')
           .insert([{
@@ -173,7 +174,6 @@ const AdminBlog = () => {
           }]);
 
         if (error) throw error;
-
         toast.success('Blog post created successfully!');
       }
 
@@ -206,49 +206,41 @@ const AdminBlog = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (postId: string) => {
-    if (!confirm('Are you sure you want to delete this blog post?')) return;
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this post?')) return;
 
     try {
       const { error } = await supabase
         .from('blog_posts')
         .delete()
-        .eq('id', postId);
+        .eq('id', id);
 
       if (error) throw error;
 
-      setPosts(posts.filter((post) => post.id !== postId));
-      toast.success('Blog post deleted');
+      toast.success('Post deleted successfully');
+      fetchPosts();
     } catch (error) {
-      toast.error('Failed to delete blog post');
+      toast.error('Failed to delete post');
     }
   };
 
-  const handleStatusChange = async (postId: string, newStatus: string) => {
+  const handleStatusChange = async (id: string, newStatus: string) => {
     try {
-      const updateData: any = {
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (newStatus === 'published') {
-        const post = posts.find(p => p.id === postId);
-        if (!post?.published_at) {
-          updateData.published_at = new Date().toISOString();
-        }
-      }
-
       const { error } = await supabase
         .from('blog_posts')
-        .update(updateData)
-        .eq('id', postId);
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+          published_at: newStatus === 'published' ? new Date().toISOString() : null,
+        })
+        .eq('id', id);
 
       if (error) throw error;
 
-      setPosts(posts.map((post) => (post.id === postId ? { ...post, ...updateData } : post)));
-      toast.success(`Post marked as ${newStatus}`);
+      toast.success(`Post ${newStatus}`);
+      fetchPosts();
     } catch (error) {
-      toast.error('Failed to update post status');
+      toast.error('Failed to update status');
     }
   };
 
@@ -267,231 +259,299 @@ const AdminBlog = () => {
     });
   };
 
-  const openNewPostModal = () => {
-    setEditingPost(null);
-    resetForm();
-    setShowModal(true);
-  };
-
   const stats = {
     total: posts.length,
-    published: posts.filter((p) => p.status === 'published').length,
-    draft: posts.filter((p) => p.status === 'draft').length,
-    views: posts.reduce((sum, p) => sum + p.views, 0),
+    published: posts.filter(p => p.status === 'published').length,
+    drafts: posts.filter(p => p.status === 'draft').length,
+    totalViews: posts.reduce((sum, p) => sum + p.views, 0),
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'published':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      case 'draft':
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'archived':
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
   };
 
   if (loading) {
     return (
-      <AdminLayout title="Blog Management" subtitle="Manage your blog posts">
-        <div className="animate-pulse space-y-4">
-          <div className={`h-12 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-200'} rounded`}></div>
-          <div className={`h-96 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-200'} rounded-xl`}></div>
+      <AdminLayout title="Blog Management">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         </div>
       </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout title="Blog Management" subtitle="Create and manage blog posts">
+    <AdminLayout title="Blog Management">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className={`text-3xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              Blog Management
+            </h1>
+            <p className={`mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              Create and manage your blog posts
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setEditingPost(null);
+              setShowModal(true);
+            }}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+          >
+            <Plus size={20} />
+            <span className="hidden sm:inline">New Post</span>
+          </button>
+        </div>
+      </div>
+
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 shadow-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Posts</p>
-              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.total}</p>
+              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Posts</p>
+              <p className={`text-3xl font-bold mt-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.total}</p>
             </div>
-            <BookOpen className="w-8 h-8 text-blue-500" />
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <FileText className="text-blue-600 dark:text-blue-400" size={24} />
+            </div>
           </div>
         </div>
 
-        <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
+        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 shadow-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Published</p>
-              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.published}</p>
+              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Published</p>
+              <p className={`text-3xl font-bold mt-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.published}</p>
             </div>
-            <Eye className="w-8 h-8 text-green-500" />
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <BookOpen className="text-green-600 dark:text-green-400" size={24} />
+            </div>
           </div>
         </div>
 
-        <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
+        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 shadow-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Drafts</p>
-              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.draft}</p>
+              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Drafts</p>
+              <p className={`text-3xl font-bold mt-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.drafts}</p>
             </div>
-            <FileText className="w-8 h-8 text-orange-500" />
+            <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+              <Edit className="text-yellow-600 dark:text-yellow-400" size={24} />
+            </div>
           </div>
         </div>
 
-        <div className={`p-4 rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
+        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 shadow-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Views</p>
-              <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.views}</p>
+              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Views</p>
+              <p className={`text-3xl font-bold mt-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{stats.totalViews.toLocaleString()}</p>
             </div>
-            <TrendingUp className="w-8 h-8 text-purple-500" />
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <TrendingUp className="text-purple-600 dark:text-purple-400" size={24} />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Filters and Actions */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-          <input
-            type="text"
-            placeholder="Search posts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
-              isDarkMode
-                ? 'bg-gray-800 border-gray-700 text-white'
-                : 'bg-white border-gray-300 text-gray-900'
-            } focus:outline-none focus:ring-2 focus:ring-primary-500`}
-          />
+      {/* Filters and Search */}
+      <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 sm:p-6 shadow-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} mb-6`}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search */}
+          <div className="md:col-span-2">
+            <div className="relative">
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} size={20} />
+              <input
+                type="text"
+                placeholder="Search posts..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full pl-10 pr-4 py-2.5 rounded-lg border ${
+                  isDarkMode
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                    : 'bg-white border-gray-300 text-gray-900'
+                } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
+              />
+            </div>
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className={`w-full px-4 py-2.5 rounded-lg border ${
+                isDarkMode
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
+            >
+              <option value="all">All Status</option>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+
+          {/* Category Filter */}
+          <div>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className={`w-full px-4 py-2.5 rounded-lg border ${
+                isDarkMode
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
+            >
+              <option value="all">All Categories</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
         </div>
-
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className={`px-4 py-2 rounded-lg border ${
-            isDarkMode
-              ? 'bg-gray-800 border-gray-700 text-white'
-              : 'bg-white border-gray-300 text-gray-900'
-          } focus:outline-none focus:ring-2 focus:ring-primary-500`}
-        >
-          <option value="all">All Status</option>
-          <option value="published">Published</option>
-          <option value="draft">Draft</option>
-          <option value="archived">Archived</option>
-        </select>
-
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className={`px-4 py-2 rounded-lg border ${
-            isDarkMode
-              ? 'bg-gray-800 border-gray-700 text-white'
-              : 'bg-white border-gray-300 text-gray-900'
-          } focus:outline-none focus:ring-2 focus:ring-primary-500`}
-        >
-          <option value="all">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
-
-        <button
-          onClick={openNewPostModal}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 flex items-center gap-2 whitespace-nowrap"
-        >
-          <Plus className="w-5 h-5" />
-          New Post
-        </button>
       </div>
 
-      {/* Posts Table */}
-      <div className={`rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm overflow-hidden`}>
-        {filteredPosts.length === 0 ? (
-          <div className="text-center py-12">
-            <BookOpen className={`w-16 h-16 mx-auto mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} />
-            <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>No blog posts found</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
+      {/* Posts Table/Grid */}
+      {filteredPosts.length === 0 ? (
+        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-12 text-center shadow-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <BookOpen size={64} className={`mx-auto mb-4 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} />
+          <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            No posts found
+          </h3>
+          <p className={`mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            {searchQuery || statusFilter !== 'all' || categoryFilter !== 'all'
+              ? 'Try adjusting your filters'
+              : 'Create your first blog post to get started'}
+          </p>
+        </div>
+      ) : (
+        <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-sm border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} overflow-hidden`}>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
-              <thead className={`${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+              <thead className={isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}>
                 <tr>
-                  <th className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
-                    Title
+                  <th className={`px-6 py-4 text-left text-xs font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
+                    Post
                   </th>
-                  <th className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                     Category
                   </th>
-                  <th className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                     Author
                   </th>
-                  <th className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                     Status
                   </th>
-                  <th className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                     Views
                   </th>
-                  <th className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-left text-xs font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                     Date
                   </th>
-                  <th className={`px-4 py-3 text-left text-xs font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-right text-xs font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wider`}>
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className={`divide-y ${isDarkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
                 {filteredPosts.map((post) => (
-                  <tr key={post.id} className={`${isDarkMode ? 'hover:bg-gray-750' : 'hover:bg-gray-50'}`}>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        {post.featured && (
-                          <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded">Featured</span>
+                  <tr key={post.id} className={`${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'} transition-colors`}>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        {post.image_url && (
+                          <img
+                            src={post.image_url}
+                            alt={post.title}
+                            className="w-12 h-12 rounded-lg object-cover"
+                          />
                         )}
-                        <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                          {post.title}
-                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} truncate`}>
+                              {post.title}
+                            </p>
+                            {post.featured && (
+                              <Star className="text-yellow-500 flex-shrink-0" size={16} fill="currentColor" />
+                            )}
+                          </div>
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                            {post.excerpt}
+                          </p>
+                        </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                        <Tag size={12} />
                         {post.category}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {post.author}
-                      </span>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <User size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
+                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          {post.author}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4">
                       <select
                         value={post.status}
                         onChange={(e) => handleStatusChange(post.id, e.target.value)}
-                        className={`text-sm px-2 py-1 rounded border ${
-                          post.status === 'published'
-                            ? 'bg-green-100 text-green-700 border-green-200'
-                            : post.status === 'draft'
-                            ? 'bg-orange-100 text-orange-700 border-orange-200'
-                            : 'bg-gray-100 text-gray-700 border-gray-200'
-                        }`}
+                        className={`px-3 py-1 rounded-full text-xs font-medium border-0 cursor-pointer ${getStatusColor(post.status)}`}
                       >
                         <option value="draft">Draft</option>
                         <option value="published">Published</option>
                         <option value="archived">Archived</option>
                       </select>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        {post.views}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {new Date(post.created_at).toLocaleDateString()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
+                        <Eye size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
+                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          {post.views.toLocaleString()}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
+                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                          {new Date(post.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => handleEdit(post)}
-                          className="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-600"
+                          className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                           title="Edit"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(post.id)}
-                          className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600"
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                           title="Delete"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </td>
@@ -500,82 +560,158 @@ const AdminBlog = () => {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
 
-      {/* Create/Edit Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className={`w-full max-w-4xl rounded-xl ${isDarkMode ? 'bg-gray-800' : 'bg-white'} my-8`}>
-            <div className={`p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-              <div className="flex items-center justify-between">
-                <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                  {editingPost ? 'Edit Blog Post' : 'Create New Blog Post'}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowModal(false);
-                    setEditingPost(null);
-                  }}
-                  className={`p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-                >
-                  <X className="w-5 h-5" />
-                </button>
+          {/* Mobile Card View */}
+          <div className="lg:hidden divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredPosts.map((post) => (
+              <div key={post.id} className="p-4">
+                <div className="flex items-start gap-3 mb-3">
+                  {post.image_url && (
+                    <img
+                      src={post.image_url}
+                      alt={post.title}
+                      className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} line-clamp-2`}>
+                        {post.title}
+                        {post.featured && <Star className="inline-block ml-2 text-yellow-500" size={16} fill="currentColor" />}
+                      </h3>
+                    </div>
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} line-clamp-2 mb-3`}>
+                      {post.excerpt}
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(post.status)}`}>
+                        {post.status}
+                      </span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${isDarkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                        <Tag size={12} />
+                        {post.category}
+                      </span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <Eye size={12} />
+                        {post.views}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <User size={12} />
+                          {post.author}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar size={12} />
+                          {new Date(post.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEdit(post)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(post.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Modal for Create/Edit */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto`}>
+            {/* Modal Header */}
+            <div className={`sticky top-0 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} px-6 py-4 flex items-center justify-between z-10`}>
+              <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                {editingPost ? 'Edit Post' : 'Create New Post'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingPost(null);
+                  resetForm();
+                }}
+                className={`p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
+              >
+                <X size={24} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    required
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDarkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-primary-500`}
-                  />
-                </div>
+            {/* Modal Body */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Title */}
+              <div>
+                <label className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  required
+                  className={`w-full px-4 py-3 rounded-lg border ${
+                    isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
+                  placeholder="Enter post title..."
+                />
+              </div>
 
-                <div>
-                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Slug *
-                  </label>
-                  <input
-                    type="text"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={handleInputChange}
-                    required
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      isDarkMode
-                        ? 'bg-gray-700 border-gray-600 text-white'
-                        : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-primary-500`}
-                  />
-                </div>
+              {/* Slug */}
+              <div>
+                <label className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Slug <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleInputChange}
+                  required
+                  className={`w-full px-4 py-3 rounded-lg border ${
+                    isDarkMode
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
+                  placeholder="post-slug"
+                />
+                <p className={`mt-1 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  URL-friendly version of the title (auto-generated)
+                </p>
+              </div>
 
+              {/* Row: Category, Author, Read Time */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Category *
+                  <label className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Category <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-3 py-2 rounded-lg border ${
+                    className={`w-full px-4 py-3 rounded-lg border ${
                       isDarkMode
                         ? 'bg-gray-700 border-gray-600 text-white'
                         : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                    } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
                   >
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
@@ -584,8 +720,8 @@ const AdminBlog = () => {
                 </div>
 
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Author *
+                  <label className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Author <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -593,16 +729,17 @@ const AdminBlog = () => {
                     value={formData.author}
                     onChange={handleInputChange}
                     required
-                    className={`w-full px-3 py-2 rounded-lg border ${
+                    className={`w-full px-4 py-3 rounded-lg border ${
                       isDarkMode
                         ? 'bg-gray-700 border-gray-600 text-white'
                         : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                    } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
+                    placeholder="Author name"
                   />
                 </div>
 
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <label className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                     Read Time
                   </label>
                   <input
@@ -610,126 +747,150 @@ const AdminBlog = () => {
                     name="read_time"
                     value={formData.read_time}
                     onChange={handleInputChange}
-                    placeholder="5 min read"
-                    className={`w-full px-3 py-2 rounded-lg border ${
+                    className={`w-full px-4 py-3 rounded-lg border ${
                       isDarkMode
                         ? 'bg-gray-700 border-gray-600 text-white'
                         : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                    } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
+                    placeholder="5 min read"
                   />
                 </div>
+              </div>
 
+              {/* Row: Status, Featured, Image */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                    Status
+                  <label className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Status <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 rounded-lg border ${
+                    required
+                    className={`w-full px-4 py-3 rounded-lg border ${
                       isDarkMode
                         ? 'bg-gray-700 border-gray-600 text-white'
                         : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                    } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
                   >
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
                     <option value="archived">Archived</option>
                   </select>
                 </div>
+
+                <div className="flex items-end">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="featured"
+                      checked={formData.featured}
+                      onChange={handleInputChange}
+                      className="w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                    />
+                    <span className={`text-sm font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Featured Post
+                    </span>
+                  </label>
+                </div>
               </div>
 
+              {/* Image URL */}
               <div>
-                <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <label className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                   Image URL
                 </label>
                 <input
-                  type="text"
+                  type="url"
                   name="image_url"
                   value={formData.image_url}
                   onChange={handleInputChange}
-                  placeholder="/img (3).jpg"
-                  className={`w-full px-3 py-2 rounded-lg border ${
+                  className={`w-full px-4 py-3 rounded-lg border ${
                     isDarkMode
                       ? 'bg-gray-700 border-gray-600 text-white'
                       : 'bg-white border-gray-300 text-gray-900'
-                  } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                  } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all`}
+                  placeholder="https://example.com/image.jpg"
                 />
               </div>
 
+              {/* Excerpt */}
               <div>
-                <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Excerpt *
+                <label className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Excerpt <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   name="excerpt"
                   value={formData.excerpt}
                   onChange={handleInputChange}
                   required
-                  rows={2}
-                  className={`w-full px-3 py-2 rounded-lg border ${
+                  rows={3}
+                  className={`w-full px-4 py-3 rounded-lg border ${
                     isDarkMode
                       ? 'bg-gray-700 border-gray-600 text-white'
                       : 'bg-white border-gray-300 text-gray-900'
-                  } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                  } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all resize-none`}
+                  placeholder="Brief description of the post..."
                 />
               </div>
 
+              {/* Content */}
               <div>
-                <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Content * (HTML supported)
+                <label className={`block text-sm font-semibold mb-2 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Content <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   name="content"
                   value={formData.content}
                   onChange={handleInputChange}
                   required
-                  rows={10}
-                  className={`w-full px-3 py-2 rounded-lg border font-mono text-sm ${
+                  rows={12}
+                  className={`w-full px-4 py-3 rounded-lg border ${
                     isDarkMode
                       ? 'bg-gray-700 border-gray-600 text-white'
                       : 'bg-white border-gray-300 text-gray-900'
-                  } focus:outline-none focus:ring-2 focus:ring-primary-500`}
+                  } focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all resize-none font-mono text-sm`}
+                  placeholder="Write your post content here... (HTML supported)"
                 />
+                <p className={`mt-1 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                  HTML tags are supported for formatting
+                </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="featured"
-                  id="featured"
-                  checked={formData.featured}
-                  onChange={handleInputChange}
-                  className="w-4 h-4 text-primary-600 rounded focus:ring-2 focus:ring-primary-500"
-                />
-                <label htmlFor="featured" className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  Mark as featured post
-                </label>
-              </div>
-
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {saving ? 'Saving...' : editingPost ? 'Update Post' : 'Create Post'}
-                </button>
+              {/* Modal Footer */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     setEditingPost(null);
+                    resetForm();
                   }}
-                  className={`px-4 py-2 rounded-lg ${
+                  className={`flex-1 px-6 py-3 rounded-lg font-semibold ${
                     isDarkMode
-                      ? 'bg-gray-700 text-white hover:bg-gray-600'
+                      ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  } transition-colors`}
                 >
                   Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save size={20} />
+                      <span>{editingPost ? 'Update Post' : 'Create Post'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -740,4 +901,4 @@ const AdminBlog = () => {
   );
 };
 
-export default AdminBlog;
+export default AdminBlogImproved;

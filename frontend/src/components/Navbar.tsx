@@ -7,11 +7,11 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Features', href: '#features' },
-    { name: 'About', href: '#about' },
-    { name: 'Reviews', href: '#reviews' },
-    { name: 'FAQ', href: '#faq' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Features', href: '/features' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Docs', href: '/docs' },
+    { name: 'Contact', href: '/contact' },
   ];
 
   return (

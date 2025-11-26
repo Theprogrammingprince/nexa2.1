@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import DashboardLayout from '../components/DashboardLayout';
-import { BookOpen, Clock, Award } from 'lucide-react';
+import { BookOpen, Clock, Award, AlertCircle } from 'lucide-react';
 
 interface Summary {
   id: number;
@@ -132,6 +132,23 @@ const SummariesPage = () => {
 
   return (
     <DashboardLayout currentPage="/summaries">
+      {/* Coming Soon Banner */}
+      <div className="mb-6 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-l-4 border-yellow-500 p-6 rounded-lg">
+        <div className="flex items-start gap-4">
+          <AlertCircle className="text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-1" size={24} />
+          <div>
+            <h3 className="text-lg font-bold text-yellow-900 dark:text-yellow-100 mb-2">
+              Coming Soon! 🚀
+            </h3>
+            <p className="text-yellow-800 dark:text-yellow-200">
+              We're currently populating our comprehensive course summaries database. 
+              This feature will be available soon with detailed study materials for all your courses.
+              The content below is for preview purposes only.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Search Bar */}
       <div className="mb-6">
         <input

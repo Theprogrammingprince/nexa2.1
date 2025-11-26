@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 );
 
 -- Create index for faster queries
-CREATE INDEX idx_contact_messages_status ON contact_messages(status);
-CREATE INDEX idx_contact_messages_created_at ON contact_messages(created_at DESC);
-CREATE INDEX idx_contact_messages_email ON contact_messages(email);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(status);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_contact_messages_email ON contact_messages(email);
 
 -- Enable RLS
 ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;

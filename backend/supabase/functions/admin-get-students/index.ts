@@ -162,10 +162,10 @@ serve(async (req) => {
     }
 
     // Otherwise, get list of all students with basic stats
+    // Fetch all users from profiles table (filter by role if needed)
     const { data: students, error: studentsError } = await supabaseClient
       .from('profiles')
       .select('*')
-      .eq('role', 'student')
       .order('created_at', { ascending: false })
 
     if (studentsError) {
