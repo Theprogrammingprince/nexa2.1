@@ -306,8 +306,8 @@ const SettingsPage = () => {
                   : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <User className="inline mr-1 sm:mr-2" size={18} />
-              <span className="hidden sm:inline">Profile</span>
+              <User className={`inline mr-1 sm:mr-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} size={18} />
+              <span className={`hidden sm:inline ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Profile</span>
             </button>
             <button
               onClick={() => setActiveTab('security')}
@@ -317,8 +317,8 @@ const SettingsPage = () => {
                   : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Lock className="inline mr-1 sm:mr-2" size={18} />
-              <span className="hidden sm:inline">Security</span>
+              <Lock className={`inline mr-1 sm:mr-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} size={18} />
+              <span className={`hidden sm:inline ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Security</span>
             </button>
             <button
               onClick={() => setActiveTab('notifications')}
@@ -328,8 +328,8 @@ const SettingsPage = () => {
                   : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Bell className="inline mr-1 sm:mr-2" size={18} />
-              <span className="hidden sm:inline">Notifications</span>
+              <Bell className={`inline mr-1 sm:mr-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} size={18} />
+              <span className={`hidden sm:inline ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Notifications</span>
             </button>
             <button
               onClick={() => setActiveTab('preferences')}
@@ -339,8 +339,8 @@ const SettingsPage = () => {
                   : isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Globe className="inline mr-1 sm:mr-2" size={18} />
-              <span className="hidden sm:inline">Preferences</span>
+              <Globe className={`inline mr-1 sm:mr-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} size={18} />
+              <span className={`hidden sm:inline ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Preferences</span>
             </button>
           </div>
 
