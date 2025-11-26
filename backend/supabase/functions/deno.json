@@ -3,6 +3,7 @@
     "experimentalDecorators": true
   },
   "imports": {
+    "std/": "https://deno.land/std@0.168.0/",
     "@supabase/supabase-js": "npm:@supabase/supabase-js@2.39.3"
   }
 }

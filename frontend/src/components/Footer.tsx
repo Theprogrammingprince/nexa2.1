@@ -101,7 +101,7 @@
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-400">
           <div className="text-center sm:text-left">
-            <p>© 2025 NEXA - All rights reserved. Building Leaders, One Exam at a Time.</p>
+            <p>© 2025 NEXA - All rights reserved. Building Leaders, One Test at a Time.</p>
           </div>
           <div className="flex gap-4">
             <a href="/privacy" className="hover:text-teal-400 transition-colors">Privacy</a>

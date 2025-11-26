@@ -22,13 +22,13 @@ const Contact = () => {
     {
       icon: Phone,
       title: 'Phone',
-      value: '+1 (555) 123-4567',
-      href: 'tel:+15551234567',
+      value: '+2348122139367',
+      href: 'tel:+2348122139367',
     },
     {
       icon: MapPin,
       title: 'Location',
-      value: 'Lagos, Nigeria',
+      value: 'Abuja, Nigeria',
       href: '#',
     },
   ];

@@ -473,12 +473,11 @@ const BillingPage = () => {
                     <span className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       Amount:
                     </span>
-                    <span className="text-2xl font-bold text-primary-600">
+                    <span className={"text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} text-primary-600"}>
                       ₦{selectedPlan === 'monthly' ? '2,000' : '20,000'}
                     </span>
                   </div>
                 </div>
-
                 <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
                   You will be redirected to Paystack to complete your payment securely.
                 </p>
