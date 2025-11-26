@@ -414,7 +414,7 @@ const SettingsPage = () => {
                     Email cannot be changed
                   </p>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Phone</label>
                   <input
                     type="tel"
@@ -422,17 +422,6 @@ const SettingsPage = () => {
                     value={profileData.phone}
                     onChange={handleProfileChange}
                     className={`w-full px-4 py-3 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${isDarkMode ? 'bg-gray-700 border-2 border-gray-600 text-white' : 'bg-white border-2 border-gray-300 text-gray-900'}`}
-                  />
-                </div>
-                <div>
-                  <label className={`block text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Student ID</label>
-                  <input
-                    type="text"
-                    name="studentId"
-                    value={profileData.studentId}
-                    onChange={handleProfileChange}
-                    className={`w-full px-4 py-3 rounded-lg ${isDarkMode ? 'bg-gray-900 border-2 border-gray-700 text-gray-500' : 'bg-gray-50 border-2 border-gray-300 text-gray-500'}`}
-                    disabled
                   />
                 </div>
                 <div>

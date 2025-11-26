@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import AdminSidebar from './AdminSidebar';
 import AdminNotificationDropdown from './AdminNotificationDropdown';
+import ProfileAvatar from './ProfileAvatar';
+import { useAuth } from '../context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 
 interface AdminLayoutProps {
@@ -11,6 +13,7 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout = ({ children, title, subtitle }: AdminLayoutProps) => {
+  const { user, profile } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -64,9 +67,12 @@ const AdminLayout = ({ children, title, subtitle }: AdminLayoutProps) => {
                 + Add Questions
               </a>
               <AdminNotificationDropdown />
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-900 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                A
-              </div>
+              <ProfileAvatar 
+                avatarUrl={profile?.avatar_url}
+                fullName={profile?.full_name || user?.email?.split('@')[0] || 'Admin'}
+                size="sm"
+                className="w-8 h-8 sm:w-10 sm:h-10"
+              />
             </div>
           </div>
         </header>
