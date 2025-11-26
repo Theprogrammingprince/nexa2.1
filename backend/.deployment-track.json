@@ -37,7 +37,7 @@
     "admin-top-performers": "{\"index.ts\":\"063abc54739cdf0210dc213540a31f05\"}",
     "check-event-reminders": "{\"index.ts\":\"c6a342f1a40db9fce856c89774ba28cd\"}",
     "create-checkout-session": "{\"index.ts\":\"d3ca836173dda44f1c1617facac2dc8d\"}",
-    "forgot-password": "{\"index.ts\":\"a2e49b3208cc0a801654d3e47b56ad62\"}",
+    "forgot-password": "{\"index.ts\":\"fac18950d7459f3517745a1a3b074d64\"}",
     "get-user-subscription": "{\"index.ts\":\"e1f002860444d9987939a8a05d7091db\"}",
     "manage-notes": "{\"index.ts\":\"a113e84a695b8d3c0918fde80816176a\"}",
     "manage-subscription": "{\"index.ts\":\"ce1bfbfbe05ef6e653dac8242ae55bcc\"}",
@@ -49,6 +49,8 @@
     "blog-posts": "{\"index.ts\":\"c7db9d610968058b75e315bfb7ee1d99\"}",
     "submit-contact": "{\"index.ts\":\"cd3c0b5d46947f090f8ef3a1757ba748\"}",
     "paystack-webhook": "{\"index.ts\":\"b6eb4b5e20243d0f8faaa9c354394b1f\"}",
-    "verify-payment": "{\"index.ts\":\"97cd98e173be4be16a69e0c397eb08a4\"}"
+    "verify-payment": "{\"index.ts\":\"97cd98e173be4be16a69e0c397eb08a4\"}",
+    "send-password-reset": "{\"index.ts\":\"b33d92cd4ca0fadb5fc48c016751b54f\"}",
+    "verify-email": "{\"index.ts\":\"8059953ab22e32d72e90e85c98662eed\"}"
   }
 }

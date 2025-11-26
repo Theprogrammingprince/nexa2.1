@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const RESEND_API_KEY = 're_VGNXzjwR_BrbmgG996twYLrs7A9vyWfQG';
+const RESEND_API_KEY = 're_R2QNjfBq_EK68vtTviLJ6nVHMZvoJyKxY';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

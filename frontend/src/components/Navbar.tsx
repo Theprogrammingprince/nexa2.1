@@ -50,11 +50,14 @@ const Navbar = () => {
             >
               Sign In
             </Link>
-            <button className="relative group overflow-hidden rounded-lg bg-gradient-to-r from-teal-600 to-cyan-600 p-0.5 shadow-md hover:shadow-lg transition-all duration-300">
+            <Link
+              to="/auth"
+              className="relative group overflow-hidden rounded-lg bg-gradient-to-r from-teal-600 to-cyan-600 p-0.5 shadow-md hover:shadow-lg transition-all duration-300"
+            >
               <div className="relative px-6 py-2 rounded-lg bg-white text-teal-600 font-medium text-sm group-hover:bg-transparent group-hover:text-white transition-all duration-300">
                 Get Started
               </div>
-            </button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
