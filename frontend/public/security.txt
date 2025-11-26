@@ -1,0 +1,65 @@
+# Security Policy
+
+## Reporting Security Issues
+
+If you discover a security vulnerability in NEXA, please report it to:
+
+Email: security@nexaplatform.com
+Response Time: Within 24 hours
+
+## Scope
+
+This security policy applies to:
+- NEXA web application
+- API endpoints
+- Database security
+- User data protection
+
+## What to Report
+
+- Authentication/Authorization bypasses
+- SQL Injection vulnerabilities
+- Cross-Site Scripting (XSS)
+- Cross-Site Request Forgery (CSRF)
+- Remote Code Execution
+- Data exposure
+- Payment security issues
+
+## What NOT to Report
+
+- Issues in third-party dependencies (report to maintainers)
+- Social engineering attacks
+- Physical security issues
+- Denial of Service (unless critical)
+
+## Responsible Disclosure
+
+Please:
+1. Give us reasonable time to fix the issue
+2. Do not publicly disclose until we've addressed it
+3. Do not access or modify user data
+4. Do not perform destructive testing
+
+## Bug Bounty
+
+We appreciate security researchers and offer:
+- Public acknowledgment (if desired)
+- Swag for valid reports
+- Potential monetary rewards for critical issues
+
+## Security Features
+
+- Row Level Security (RLS) on all database tables
+- JWT-based authentication
+- HTTPS encryption
+- Webhook signature verification
+- Input validation and sanitization
+- Rate limiting on sensitive endpoints
+- Automated security scanning
+
+## Contact
+
+Security Team: security@nexaplatform.com
+General Support: support@nexaplatform.com
+
+Last Updated: November 26, 2024

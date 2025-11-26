@@ -7,6 +7,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { CreditCard, Check, X, Crown, Zap } from 'lucide-react';
 import { dataCache, CACHE_KEYS, CACHE_EXPIRY } from '../services/dataCache';
 import LoadingStatus from '../components/LoadingStatus';
+import PaystackPayment from '../components/PaystackPayment';
+import supabase from '../supabaseClient';
 
 interface Subscription {
   tier: string;
@@ -31,6 +33,8 @@ const BillingPage = () => {
   const [billingHistory, setBillingHistory] = useState<BillingHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
 
   useEffect(() => {
     fetchSubscriptionData();
@@ -56,34 +60,62 @@ const BillingPage = () => {
     }
   };
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (planType: 'monthly' | 'yearly' = 'monthly') => {
+    if (!user?.email) {
+      toast.error('Please log in to subscribe');
+      return;
+    }
+    
+    setSelectedPlan(planType);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = async (reference: string) => {
     setProcessing(true);
     try {
-      const response = await billingAPI.createCheckoutSession('pro');
-      
-      // Check if response has error
-      if (response.error) {
-        console.error('Checkout error:', response.error);
-        toast.error(response.error || 'Failed to start checkout');
-        setProcessing(false);
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Authentication required');
         return;
       }
-      
-      // Check if URL exists
-      if (!response.url) {
-        console.error('No checkout URL returned:', response);
-        toast.error('Stripe is not configured. Please contact support.');
-        setProcessing(false);
-        return;
+
+      // Verify payment on backend
+      const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+      const response = await fetch(`${FUNCTIONS_URL}/verify-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ 
+          reference,
+          plan_type: selectedPlan
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Subscription activated successfully!');
+        setShowPaymentModal(false);
+        // Refresh subscription data
+        await fetchSubscriptionData();
+        // Reload page to update profile
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        toast.error(data.error || 'Failed to verify payment');
       }
-      
-      // Redirect to Stripe checkout
-      window.location.href = response.url;
     } catch (error: any) {
-      console.error('Upgrade error:', error);
-      toast.error(error.message || 'Failed to start checkout');
+      console.error('Payment verification error:', error);
+      toast.error(error.message || 'Failed to verify payment');
+    } finally {
       setProcessing(false);
     }
+  };
+
+  const handlePaymentClose = () => {
+    setShowPaymentModal(false);
   };
 
   const handleCancelSubscription = async () => {
@@ -327,7 +359,7 @@ const BillingPage = () => {
                   </button>
                 ) : plan.name === 'Pro' ? (
                   <button
-                    onClick={handleUpgrade}
+                    onClick={() => handleUpgrade('monthly')}
                     disabled={processing}
                     className="w-full py-3 rounded-lg font-semibold bg-gradient-to-r from-primary-600 to-purple-600 text-white hover:from-primary-700 hover:to-purple-700 transition-all disabled:opacity-50"
                   >
@@ -407,6 +439,62 @@ const BillingPage = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Payment Modal */}
+        {showPaymentModal && user?.email && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl w-full max-w-md p-6`}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Complete Payment
+                </h3>
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  className={`p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
+                >
+                  <X size={24} className={isDarkMode ? 'text-gray-400' : 'text-gray-600'} />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'} mb-4`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Plan:
+                    </span>
+                    <span className={`font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                      Pro {selectedPlan === 'monthly' ? 'Monthly' : 'Yearly'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={`font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Amount:
+                    </span>
+                    <span className="text-2xl font-bold text-primary-600">
+                      ₦{selectedPlan === 'monthly' ? '2,000' : '20,000'}
+                    </span>
+                  </div>
+                </div>
+
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                  You will be redirected to Paystack to complete your payment securely.
+                </p>
+              </div>
+
+              <PaystackPayment
+                email={user.email}
+                amount={selectedPlan === 'monthly' ? 200000 : 2000000}
+                plan={selectedPlan}
+                onSuccess={handlePaymentSuccess}
+                onClose={handlePaymentClose}
+              />
+
+              <p className={`text-xs text-center mt-4 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                Secured by Paystack
+              </p>
             </div>
           </div>
         )}
