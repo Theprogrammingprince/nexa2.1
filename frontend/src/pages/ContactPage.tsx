@@ -32,7 +32,7 @@ const ContactPage = () => {
     {
       icon: MapPin,
       title: 'Visit Us',
-      details: 'Lagos, Nigeria',
+      details: 'Abuja, Nigeria',
       description: 'Come say hello at our office',
       color: 'from-purple-500 to-pink-500'
     },

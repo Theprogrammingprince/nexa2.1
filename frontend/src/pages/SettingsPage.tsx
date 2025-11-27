@@ -552,53 +552,59 @@ const SettingsPage = () => {
             </div>
           )}
 
-          {/* Notifications Tab */}
-          {activeTab === 'notifications' && (
-            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-8 max-w-2xl shadow-lg`}>
-              <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-6`}>Notification Preferences</h2>
-              <div className="space-y-4">
-                {Object.entries(notifications).map(([key, value]) => (
-                  <div key={key} className={`flex items-center justify-between p-5 rounded-xl transition-all ${
-                    isDarkMode 
-                      ? 'bg-gray-700 hover:bg-gray-650' 
-                      : 'bg-gray-50 hover:bg-gray-100 border-2 border-gray-200'
-                  }`}>
-                    <div>
-                      <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} capitalize`}>
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
-                      </h3>
-                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
-                        Receive notifications about {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleNotificationChange(key)}
-                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all shadow-inner ${
-                        value 
-                          ? 'bg-gradient-to-r from-primary-500 to-primary-600' 
-                          : isDarkMode ? 'bg-gray-600' : 'bg-gray-300'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${
-                          value ? 'translate-x-8' : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div className={`mt-8 pt-6 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                <button
-                  onClick={handleSaveNotifications}
-                  className="px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all font-semibold shadow-lg flex items-center gap-2"
-                >
-                  <Save size={20} />
-                  Save Preferences
-                </button>
-              </div>
-            </div>
-          )}
+{/* Notifications Tab */}
+          {activeTab === 'notifications' && (
+            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-8 max-w-2xl shadow-lg`}>
+              <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-6`}>Notification Preferences</h2>
+              <div className="space-y-4">
+                {Object.entries(notifications).map(([key, value]) => (
+                  <div key={key} className={`flex items-center justify-between p-5 rounded-xl transition-all ${
+                    isDarkMode 
+                      ? 'bg-gray-700 hover:bg-gray-650' 
+                      : 'bg-gray-50 hover:bg-gray-100 border-2 border-gray-200'
+                  }`}>
+                    <div>
+                      <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} capitalize`}>
+                        {key.replace(/([A-Z])/g, ' $1').trim()}
+                      </h3>
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
+                        Receive notifications about {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleNotificationChange(key)}
+                      className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all border ${ // Border 1px remains
+                        value 
+                            ? 'bg-gradient-to-r from-primary-600 to-primary-700 border-primary-800 shadow-md' // **FIX: Darker primary gradient and stronger shadow**
+                            : isDarkMode 
+                                ? 'bg-gray-600 border-gray-500 shadow-inner' // OFF state Dark Mode
+                                : 'bg-gray-400 border-gray-500 shadow-inner' // OFF state Light Mode
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-5 w-5 transform rounded-full shadow-lg transition-transform ${
+                          value 
+                                ? isDarkMode 
+                                    ? 'translate-x-8 bg-white' // Dark Mode ON: White thumb
+                                    : 'translate-x-8 bg-black' // Light Mode ON: Black thumb
+                            : 'translate-x-1 bg-white'      
+                        }`}
+                      />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className={`mt-8 pt-6 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                <button
+                  onClick={handleSaveNotifications}
+                  className="px-8 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all font-semibold shadow-lg flex items-center gap-2"
+                >
+                  <Save size={20} />
+                  Save Preferences
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Preferences Tab */}
           {activeTab === 'preferences' && (
