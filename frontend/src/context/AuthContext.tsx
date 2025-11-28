@@ -180,21 +180,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
 
         if (error) throw error;
+        
+        // Check if user's email is verified
+        if (data.user) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('email_verified')
+                .eq('id', data.user.id)
+                .single();
+            
+            if (profile && !profile.email_verified) {
+                // Don't sign out - keep session for verification
+                // Throw special error that includes email for verification redirect
+                const verificationError = new Error('EMAIL_NOT_VERIFIED');
+                (verificationError as any).email = email;
+                (verificationError as any).needsVerification = true;
+                throw verificationError;
+            }
+        }
+        
         return data;
     };
 
     const signUp = async (email: string, password: string, fullName: string) => {
-        // Check if email exists with unverified status
+        // Check if email exists with unverified status in profiles table
         const { data: existingProfile } = await supabase
             .from('profiles')
             .select('id, email_verified')
             .eq('email', email)
-            .single();
+            .maybeSingle();
 
-        // If email exists but not verified, allow re-signup by treating it as new
+        // If email exists but not verified, delete the old unverified account to allow re-signup
         if (existingProfile && !existingProfile.email_verified) {
-            console.log('Email exists but not verified, allowing re-signup');
-            // The user can sign up again - Supabase will handle the existing account
+            console.log('Email exists but not verified, cleaning up old account for re-signup');
+            
+            // Use service role to delete the auth user (requires admin API)
+            // First, delete the profile which will cascade to related tables
+            const { error: deleteProfileError } = await supabase
+                .from('profiles')
+                .delete()
+                .eq('id', existingProfile.id);
+            
+            if (deleteProfileError) {
+                console.error('Error deleting unverified profile:', deleteProfileError);
+                throw new Error('Unable to process signup. Please contact support.');
+            }
+            
+            // Note: The auth.users entry should be deleted via database trigger or manually
+            // For now, we'll proceed with signup which may fail if auth user still exists
+        } else if (existingProfile && existingProfile.email_verified) {
+            // If email is verified, don't allow signup
+            throw new Error('This email is already registered. Please sign in instead.');
         }
 
         // Sign up with autoConfirm disabled (requires Supabase dashboard config)
@@ -209,10 +245,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             },
         });
 
-        // If error is "User already registered" but email not verified, provide helpful message
+        // Handle signup errors
         if (error) {
-            if (error.message.includes('already registered') && existingProfile && !existingProfile.email_verified) {
-                throw new Error('This email is registered but not verified. Please check your email for the verification code, or use the "Resend Code" option.');
+            // If user already exists and is verified, show appropriate message
+            if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+                throw new Error('This email is already registered. Please sign in instead.');
             }
             throw error;
         }

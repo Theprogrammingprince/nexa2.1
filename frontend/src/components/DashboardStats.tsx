@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { TrendingUp, TrendingDown, BookOpen, Award, Clock, Target, BarChart3 } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 interface DashboardStatsData {
   overview: {
@@ -49,7 +48,7 @@ const DashboardStats = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
-      toast.error('Failed to load dashboard stats');
+      // Silently handle error - network issues shouldn't disrupt the user experience
       setLoading(false);
     }
   };

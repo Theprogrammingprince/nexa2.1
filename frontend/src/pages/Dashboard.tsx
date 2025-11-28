@@ -89,7 +89,8 @@ const Dashboard = () => {
       setDashboardStats(data);
     } catch (error: any) {
       console.error('Error fetching dashboard stats:', error);
-      toast.error('Failed to load dashboard stats');
+      // Silently handle error - user will see default stats instead
+      // Network issues shouldn't disrupt the user experience
     }
   };
 

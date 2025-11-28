@@ -54,7 +54,15 @@ const AuthPage = () => {
         setShowVerification(true);
       }
     } catch (err: any) {
-      toast.error(err.message || 'Authentication failed. Please try again.');
+      // Check if this is an email verification error
+      if (err.message === 'EMAIL_NOT_VERIFIED' && err.needsVerification) {
+        toast.error('Please verify your email to continue');
+        // Redirect to verification page with the email
+        setUserEmail(err.email || formData.email);
+        setShowVerification(true);
+      } else {
+        toast.error(err.message || 'Authentication failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
