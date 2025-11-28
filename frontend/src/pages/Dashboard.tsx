@@ -664,9 +664,12 @@ const Dashboard = () => {
             <div className={`lg:col-span-2 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 sm:p-6`}>
               <div className="flex items-center justify-between mb-6">
                 <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Continue Reading</h3>
-                <a href="/summaries" className="text-sm text-primary-600 hover:text-primary-700">
-                  View all →
-                </a>
+                <a 
+  href="/summaries" 
+  className={`text-sm ${isDarkMode ? 'text-orange-500 hover:text-orange-400' : 'text-black hover:text-gray-800'}`}
+>
+    View all →
+</a>
               </div>
               <div className="space-y-4">
                 {recentSummaries.map((summary) => (

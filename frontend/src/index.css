@@ -30,4 +30,9 @@
   .animate-fade-in {
     animation: fadeIn 0.3s ease-out;
   }
+
+  .gap-4 { /* the element was .flex.items-center.gap-4 */
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
