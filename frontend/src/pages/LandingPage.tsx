@@ -2,7 +2,7 @@ import Navbar from '../components/Navbar'
 import HeroSection from '../components/HeroSection'
 import FeaturesSection from '../components/FeaturesSection'
 import AboutSection from '../components/AboutSection'
-import Review from '../components/Review'
+// import Review from '../components/Review'
 import FAQ from '../components/Faq'
 import Contact from '../components/Contact'
 import Footer from '../components/Footer'
@@ -22,9 +22,7 @@ const LandingPage = () => {
       <section id="about">
         <AboutSection />
       </section>
-      <section id="reviews">
-        <Review />
-      </section>
+
       <section id="faq">
         <FAQ />
       </section>
