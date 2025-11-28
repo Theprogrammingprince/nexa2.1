@@ -18,6 +18,11 @@ const EmailVerification = ({ email, onVerified }: EmailVerificationProps) => {
   const [countdown, setCountdown] = useState(0);
   const [error, setError] = useState('');
 
+  // Debug: Log when component mounts
+  useEffect(() => {
+    console.log('EmailVerification component mounted with email:', email);
+  }, [email]);
+
   // Prevent back navigation - sign out user if they try to go back
   useEffect(() => {
     const handlePopState = async (e: PopStateEvent) => {

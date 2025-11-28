@@ -274,21 +274,53 @@ serve(async (req: Request) => {
         );
       }
 
-      // Update user profile to mark email as verified
-      const { error: updateError } = await supabaseClient
+      // Check if profile exists first
+      const { data: existingProfile } = await supabaseClient
         .from('profiles')
-        .update({ 
-          email_verified: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+        .select('id')
+        .eq('id', user.id)
+        .single();
 
-      if (updateError) {
-        console.error('Error updating profile:', updateError);
-        return new Response(
-          JSON.stringify({ error: 'Failed to verify email' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      if (existingProfile) {
+        // Update existing profile to mark email as verified
+        const { error: updateError } = await supabaseClient
+          .from('profiles')
+          .update({ 
+            email_verified: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', user.id);
+
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+          return new Response(
+            JSON.stringify({ error: 'Failed to verify email' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } else {
+        // Create profile if it doesn't exist
+        const { error: insertError } = await supabaseClient
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email || '',
+            full_name: user.user_metadata?.fullName || user.email?.split('@')[0] || 'User',
+            role: 'student',
+            email_verified: true,
+            subscription_tier: 'free',
+            subscription_status: 'active',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+
+        if (insertError) {
+          console.error('Error creating profile during verification:', insertError);
+          return new Response(
+            JSON.stringify({ error: 'Failed to create profile during verification' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
       }
 
       // Delete used verification code

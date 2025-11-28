@@ -1,7 +1,7 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useEffect, useState } from 'react';
-import supabase from '../supabaseClient';
+import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -10,32 +10,17 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
     const { user, profile, loading } = useAuth();
-    const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
-    const [checkingVerification, setCheckingVerification] = useState(true);
+    const location = useLocation();
 
     useEffect(() => {
-        const checkEmailVerification = async () => {
-            if (!user) {
-                setCheckingVerification(false);
-                return;
-            }
+        // Show toast when redirecting unverified users
+        if (!loading && user && profile && profile.email_verified === false) {
+            toast.error('Please verify your email to access the dashboard');
+        }
+    }, [loading, user, profile]);
 
-            try {
-                // Get fresh user data to check email verification
-                const { data: { user: freshUser } } = await supabase.auth.getUser();
-                setEmailVerified(freshUser?.email_confirmed_at != null);
-            } catch (error) {
-                console.error('Error checking email verification:', error);
-                setEmailVerified(false);
-            } finally {
-                setCheckingVerification(false);
-            }
-        };
-
-        checkEmailVerification();
-    }, [user]);
-
-    if (loading || checkingVerification) {
+    // Show loading spinner while checking authentication
+    if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">
@@ -46,19 +31,31 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
         );
     }
 
+    // STRICT CHECK 1: No authenticated user - redirect to auth page
     if (!user) {
-        return <Navigate to="/auth" replace />;
+        return <Navigate to="/auth" replace state={{ from: location }} />;
     }
 
-    // Redirect unverified users to auth page
-    if (emailVerified === false) {
-        return <Navigate to="/auth" replace />;
+    // STRICT CHECK 2: No profile in database - redirect to auth page
+    // This handles cases where auth user exists but profile doesn't
+    if (!profile) {
+        console.error('User authenticated but no profile found in database');
+        return <Navigate to="/auth" replace state={{ from: location }} />;
     }
 
-    if (requireAdmin && profile?.role !== 'admin') {
+    // STRICT CHECK 3: Email not verified - redirect to auth page
+    // The auth page will automatically redirect to verification
+    if (profile.email_verified === false) {
+        return <Navigate to="/auth" replace state={{ from: location, needsVerification: true }} />;
+    }
+
+    // STRICT CHECK 4: Admin routes require admin role
+    if (requireAdmin && profile.role !== 'admin') {
+        toast.error('Access denied. Admin privileges required.');
         return <Navigate to="/dashboard" replace />;
     }
 
+    // All checks passed - render protected content
     return <>{children}</>;
 };
 

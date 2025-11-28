@@ -23,7 +23,8 @@ const Dashboard = () => {
 
   // Fetch notifications and stats from database
   useEffect(() => {
-    if (user) {
+    // Only fetch data if user exists AND profile is verified
+    if (user && profile && profile.email_verified) {
       // Small delay to ensure session is fully loaded
       const timer = setTimeout(() => {
         fetchNotifications();
@@ -47,7 +48,7 @@ const Dashboard = () => {
         window.removeEventListener('testSubmitted', handleTestSubmitted);
       };
     }
-  }, [user]);
+  }, [user, profile]);
 
   const fetchNotifications = async () => {
     if (!user) {

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast, { Toaster } from 'react-hot-toast';
@@ -7,8 +7,9 @@ import supabase from '../supabaseClient';
 import EmailVerification from '../components/EmailVerification';
 
 const AuthPage = () => {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user, profile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -22,15 +23,26 @@ const AuthPage = () => {
     fullName: '',
   });
 
+  // Check if user needs verification on mount
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.needsVerification && user && profile) {
+      setUserEmail(profile.email);
+      setShowVerification(true);
+    }
+  }, [location.state, user, profile]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       if (isLogin) {
-        await signIn(formData.email, formData.password);
-        toast.success('Welcome back!');
-        navigate('/dashboard');
+        const result = await signIn(formData.email, formData.password);
+        // If signIn succeeds, navigate to dashboard
+        if (result) {
+          navigate('/dashboard');
+        }
       } else {
         if (formData.password !== formData.confirmPassword) {
           toast.error('Passwords do not match');
@@ -54,9 +66,12 @@ const AuthPage = () => {
         setShowVerification(true);
       }
     } catch (err: any) {
+      console.log('Auth error caught:', err);
       // Check if this is an email verification error
-      if (err.message === 'EMAIL_NOT_VERIFIED' && err.needsVerification) {
-        toast.error('Please verify your email to continue');
+      if ((err.message === 'EMAIL_NOT_VERIFIED' || err.message === 'USER_EXISTS_IN_AUTH_ONLY') && err.needsVerification) {
+        console.log('Redirecting to verification page for email:', err.email);
+        // Show the specific message from the error
+        toast.error(err.message || 'Please verify your email to continue');
         // Redirect to verification page with the email
         setUserEmail(err.email || formData.email);
         setShowVerification(true);
@@ -102,6 +117,7 @@ const AuthPage = () => {
 
   // Show verification screen if needed
   if (showVerification) {
+    console.log('Rendering EmailVerification component with email:', userEmail);
     return (
       <EmailVerification
         email={userEmail}
@@ -111,6 +127,7 @@ const AuthPage = () => {
     );
   }
 
+  console.log('AuthPage rendering - showVerification:', showVerification, 'userEmail:', userEmail);
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} />

@@ -4,12 +4,14 @@ import supabase from '../supabaseClient';
 import type { User } from '@supabase/supabase-js';
 import { dataCache, CACHE_KEYS, CACHE_EXPIRY } from '../services/dataCache';
 import { dashboardAPI, billingAPI, summariesAPI, coursesAPI } from '../services/api';
+import toast from 'react-hot-toast';
 
 interface Profile {
     id: string;
     email: string;
     full_name: string;
     role: 'student' | 'admin';
+    email_verified?: boolean;
     student_id?: string;
     department?: string;
     level?: string;
@@ -196,6 +198,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 (verificationError as any).email = email;
                 (verificationError as any).needsVerification = true;
                 throw verificationError;
+            } else if (profile && profile.email_verified) {
+                // User is verified - show success and let AuthPage handle navigation
+                toast.success('Welcome back!');
+                // Return data so AuthPage can navigate to dashboard
+                return data;
+            } else if (!profile) {
+                // No profile found - create one
+                const { data: { user: authUser } } = await supabase.auth.getUser();
+                if (authUser) {
+                    console.log('Creating profile for existing auth user:', authUser.email);
+                    const { data: newProfile, error: insertError } = await supabase
+                        .from('profiles')
+                        .insert({
+                            id: authUser.id,
+                            email: authUser.email || '',
+                            full_name: authUser.user_metadata?.fullName || authUser.email?.split('@')[0] || 'User',
+                            role: 'student',
+                            email_verified: authUser.email_confirmed_at ? true : false,
+                            subscription_tier: 'free',
+                            subscription_status: 'active',
+                        })
+                        .select()
+                        .single();
+                    
+                    if (insertError) {
+                        console.error('Profile creation error:', insertError);
+                        // Hide technical database errors from users
+                        if (insertError.message.includes('check constraint')) {
+                            throw new Error('Unable to create your profile. Please contact support for assistance.');
+                        }
+                        throw new Error(`Profile creation failed: ${insertError.message}`);
+                    }
+                    
+                    if (newProfile) {
+                        console.log('Profile created successfully:', newProfile);
+                        setProfile(newProfile);
+                        if (newProfile.email_verified) {
+                            toast.success('Welcome back!');
+                            return data;
+                        } else {
+                            const verificationError = new Error('EMAIL_NOT_VERIFIED');
+                            (verificationError as any).email = email;
+                            (verificationError as any).needsVerification = true;
+                            throw verificationError;
+                        }
+                    }
+                }
+                throw new Error('Unable to get user information. Please try again.');
             }
         }
         
@@ -210,27 +260,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             .eq('email', email)
             .maybeSingle();
 
-        // If email exists but not verified, delete the old unverified account to allow re-signup
-        if (existingProfile && !existingProfile.email_verified) {
-            console.log('Email exists but not verified, cleaning up old account for re-signup');
-            
-            // Use service role to delete the auth user (requires admin API)
-            // First, delete the profile which will cascade to related tables
-            const { error: deleteProfileError } = await supabase
-                .from('profiles')
-                .delete()
-                .eq('id', existingProfile.id);
-            
-            if (deleteProfileError) {
-                console.error('Error deleting unverified profile:', deleteProfileError);
-                throw new Error('Unable to process signup. Please contact support.');
-            }
-            
-            // Note: The auth.users entry should be deleted via database trigger or manually
-            // For now, we'll proceed with signup which may fail if auth user still exists
-        } else if (existingProfile && existingProfile.email_verified) {
-            // If email is verified, don't allow signup
+        // If email exists and is verified, don't allow signup
+        if (existingProfile && existingProfile.email_verified) {
             throw new Error('This email is already registered. Please sign in instead.');
+        }
+
+        // If email exists but not verified, allow re-signup
+        if (existingProfile && !existingProfile.email_verified) {
+            console.log('Email exists but not verified, allowing re-signup');
+            // We'll proceed with signup - if auth user exists, it will throw an error
+            // If it succeeds, we'll create a new profile
         }
 
         // Sign up with autoConfirm disabled (requires Supabase dashboard config)
@@ -247,9 +286,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // Handle signup errors
         if (error) {
-            // If user already exists and is verified, show appropriate message
+            // If user already exists in auth but not verified in profiles
             if (error.message.includes('already registered') || error.message.includes('User already registered')) {
-                throw new Error('This email is already registered. Please sign in instead.');
+                // Check if user exists in profiles table
+                if (existingProfile) {
+                    if (!existingProfile.email_verified) {
+                        // User exists in profiles but not verified
+                        throw new Error('This email is registered but not verified. Please check your email for the verification code, or use the "Resend Code" option.');
+                    } else {
+                        // User exists in profiles and is verified
+                        throw new Error('This email is already registered. Please sign in instead.');
+                    }
+                } else {
+                    // User exists in auth but not in profiles - this is the key case!
+                    // We need to redirect to verification page
+                    const verificationError = new Error('USER_EXISTS_IN_AUTH_ONLY');
+                    (verificationError as any).email = email;
+                    (verificationError as any).needsVerification = true;
+                    (verificationError as any).message = 'User already exists, complete your verification. You will be sent an authentication code.';
+                    throw verificationError;
+                }
             }
             throw error;
         }
@@ -263,6 +319,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     email: data.user.email,
                     full_name: fullName,
                     role: 'student',
+                    subscription_tier: 'free',
+                    subscription_status: 'active',
                 });
             
             if (profileError) {

@@ -51,7 +51,7 @@
     "paystack-webhook": "{\"index.ts\":\"b6eb4b5e20243d0f8faaa9c354394b1f\"}",
     "verify-payment": "{\"index.ts\":\"97cd98e173be4be16a69e0c397eb08a4\"}",
     "send-password-reset": "{\"index.ts\":\"b33d92cd4ca0fadb5fc48c016751b54f\"}",
-    "verify-email": "{\"index.ts\":\"8059953ab22e32d72e90e85c98662eed\"}",
+    "verify-email": "{\"index.ts\":\"ad358990cf0cd6dcaf5334000659ef38\"}",
     "send-admin-reply": "{\"index.ts\":\"fed4e192d1fd24d122d397f8c13c5816\"}"
   }
 }
