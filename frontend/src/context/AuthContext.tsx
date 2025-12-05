@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import supabase from '../supabaseClient';
 import type { User } from '@supabase/supabase-js';
+import { dataCache, CACHE_KEYS, CACHE_EXPIRY } from '../services/dataCache';
+import { dashboardAPI, billingAPI, summariesAPI, coursesAPI } from '../services/api';
 
 interface Profile {
     id: string;
@@ -13,6 +15,11 @@ interface Profile {
     level?: string;
     phone?: string;
     avatar_url?: string;
+    subscription_tier?: 'free' | 'pro';
+    subscription_status?: 'active' | 'cancelled' | 'expired' | 'trialing';
+    subscription_start_date?: string;
+    subscription_end_date?: string;
+    stripe_customer_id?: string;
 }
 
 interface AuthContextType {
@@ -125,12 +132,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 }
             } else {
                 setProfile(data);
+                // Start prefetching user data in background
+                prefetchUserData(userId);
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
         } finally {
             setLoading(false);
         }
+    };
+
+    // Prefetch commonly used data after login
+    const prefetchUserData = async (userId: string) => {
+        // Prefetch dashboard stats
+        dataCache.prefetch(
+            CACHE_KEYS.USER_STATS(userId),
+            () => dashboardAPI.getStats(userId),
+            CACHE_EXPIRY.MEDIUM
+        );
+
+        // Prefetch summaries
+        dataCache.prefetch(
+            CACHE_KEYS.SUMMARIES,
+            () => summariesAPI.getAll(),
+            CACHE_EXPIRY.LONG
+        );
+
+        // Prefetch subscription data
+        dataCache.prefetch(
+            CACHE_KEYS.SUBSCRIPTION(userId),
+            () => billingAPI.getSubscription(),
+            CACHE_EXPIRY.MEDIUM
+        );
+
+        // Prefetch courses
+        dataCache.prefetch(
+            CACHE_KEYS.COURSES,
+            () => coursesAPI.getAll(),
+            CACHE_EXPIRY.VERY_LONG
+        );
     };
 
     const signIn = async (email: string, password: string) => {

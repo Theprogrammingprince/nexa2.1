@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import supabase from '../supabaseClient';
-import { settingsAPI } from '../services/api';
+import { settingsAPI, profileImageAPI } from '../services/api';
+import ProfileAvatar from '../components/ProfileAvatar';
 import toast, { Toaster } from 'react-hot-toast';
 import DashboardLayout from '../components/DashboardLayout';
 import { 
@@ -22,6 +23,8 @@ const SettingsPage = () => {
   const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [profileData, setProfileData] = useState({
     fullName: '',
     email: '',
@@ -61,14 +64,14 @@ const SettingsPage = () => {
     if (profile) {
       setProfileData({
         fullName: profile.full_name || '',
-        email: profile.email || user?.email || '',
+        email: user?.email || '',
         phone: profile.phone || '',
         studentId: profile.student_id || '',
         department: profile.department || '',
         level: profile.level || ''
       });
+      setAvatarUrl(profile.avatar_url || null);
     }
-    
     // Load user settings
     loadUserSettings();
   }, [profile, user]);
@@ -116,6 +119,59 @@ const SettingsPage = () => {
 
   const handlePreferenceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setPreferences({ ...preferences, [e.target.name]: e.target.value });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('File too large. Maximum size is 5MB.');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const result = await profileImageAPI.uploadImage(file);
+      setAvatarUrl(result.avatar_url);
+      toast.success('✅ Profile image uploaded successfully!');
+      
+      // Reload profile to get updated avatar
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image: ' + error.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleDeleteImage = async () => {
+    if (!confirm('Are you sure you want to remove your profile image?')) return;
+
+    setUploadingImage(true);
+    try {
+      await profileImageAPI.deleteImage();
+      setAvatarUrl(null);
+      toast.success('✅ Profile image removed successfully!');
+      
+      // Reload profile
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Error deleting image:', error);
+      toast.error('Failed to delete image: ' + error.message);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -293,16 +349,43 @@ const SettingsPage = () => {
             <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-8 max-w-3xl shadow-lg`}>
               <div className="flex items-center gap-6 mb-8">
                 <div className="relative">
-                  <div className="w-24 h-24 bg-primary-600 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-                    {profileData.fullName ? profileData.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U'}
-                  </div>
-                  <button className="absolute bottom-0 right-0 w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center text-white hover:bg-gray-800">
+                  <ProfileAvatar 
+                    avatarUrl={avatarUrl}
+                    fullName={profileData.fullName}
+                    size="xl"
+                    className="w-24 h-24"
+                  />
+                  <input
+                    type="file"
+                    id="avatar-upload"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    disabled={uploadingImage}
+                  />
+                  <label
+                    htmlFor="avatar-upload"
+                    className={`absolute bottom-0 right-0 w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center text-white hover:bg-gray-800 cursor-pointer ${uploadingImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
                     <Camera size={16} />
-                  </button>
+                  </label>
+                  {avatarUrl && (
+                    <button
+                      onClick={handleDeleteImage}
+                      disabled={uploadingImage}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center text-white hover:bg-red-700 disabled:opacity-50"
+                      title="Remove image"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
                 </div>
                 <div>
                   <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{profileData.fullName || 'User'}</h2>
-                  <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>{profileData.email}</p>
+                  <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>{profileData.email}</p>
+                  {uploadingImage && (
+                    <p className="text-sm text-primary-600 mt-1">Uploading...</p>
+                  )}
                 </div>
               </div>
 

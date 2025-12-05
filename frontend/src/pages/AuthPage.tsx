@@ -79,8 +79,8 @@ const AuthPage = () => {
         <div className="w-full max-w-md">
           {/* Logo/Brand */}
           <div className="mb-6 sm:mb-8">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-primary-600 rounded-full"></div>
+            <div className="flex items-center gap-3 mb-4">
+              <img src="/logo.png" alt="NEXA Logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               {isLogin ? 'Welcome Back' : 'Create Your Account'}

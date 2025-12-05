@@ -5,10 +5,13 @@ import supabase from '../supabaseClient';
 import { dashboardAPI } from '../services/api';
 import toast, { Toaster } from 'react-hot-toast';
 import PerformanceChart from '../components/PerformanceChart';
+import TodoList from '../components/TodoList';
 
 const Dashboard = () => {
-  const [currentDate] = useState(new Date()); // Current date
-  const [selectedDate] = useState(new Date().getDate());
+  const [currentDate, setCurrentDate] = useState(new Date()); // Current date
+  const [selectedDate, setSelectedDate] = useState(new Date().getDate());
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskDate, setTaskDate] = useState<Date | null>(null);
   const { isDarkMode, toggleDarkMode } = useTheme();
   const { user, profile, signOut, isAdmin } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -31,7 +34,6 @@ const Dashboard = () => {
       
       // Listen for test submission events to refresh immediately
       const handleTestSubmitted = () => {
-        console.log('📊 Test submitted - refreshing dashboard stats');
         fetchDashboardStats();
         fetchNotifications();
       };
@@ -48,12 +50,8 @@ const Dashboard = () => {
 
   const fetchNotifications = async () => {
     if (!user) {
-      console.warn('⚠️ No user, cannot fetch notifications');
       return;
     }
-    
-    console.log('🔔 ========== FETCHING NOTIFICATIONS ==========');
-    console.log('🔔 User ID:', user.id);
     
     try {
       const { data, error } = await supabase
@@ -70,11 +68,9 @@ const Dashboard = () => {
         throw error;
       }
       
-      console.log('✅ Notifications fetched:', data?.length || 0, 'notifications');
-      console.log('✅ Notifications data:', data);
       setNotifications(data || []);
     } catch (error: any) {
-      console.error('❌ Exception fetching notifications:', error);
+      // Silently handle error
     }
   };
 
@@ -156,59 +152,43 @@ const Dashboard = () => {
     { label: 'Avg Score', value: '0%', change: 'No tests yet', trend: 'up', color: 'bg-blue-200' },
   ];
 
-  const assignments = [
+  const recentSummaries = [
     { 
       id: 1, 
-      title: 'Data Structure', 
-      subject: 'CSC 201',
-      date: 'JAN 10, 2025',
-      time: 'At 08:00 PM',
-      marks: '20 Marks',
-      status: 'Pending',
-      icon: 'chart',
-      color: 'bg-orange-100'
+      title: 'Introduction to Data Structures', 
+      course: 'CIT211 - Data Structures',
+      lastRead: '2 days ago',
+      progress: 75,
+      icon: 'book',
+      color: 'bg-purple-100'
     },
     { 
       id: 2, 
-      title: 'System Analysis', 
-      subject: 'CSC 301',
-      date: 'JAN 09, 2025',
-      time: 'At 08:00 PM',
-      marks: '10 Marks',
-      status: 'Submitted',
-      icon: 'search',
+      title: 'Algorithm Analysis & Complexity', 
+      course: 'CIT311 - Algorithm Design',
+      lastRead: '5 hours ago',
+      progress: 45,
+      icon: 'chart',
       color: 'bg-green-100'
     },
     { 
       id: 3, 
-      title: 'Information Design', 
-      subject: 'CSC 205',
-      date: 'JAN 15, 2025',
-      time: 'At 08:00 PM',
-      marks: '20 Marks',
-      status: 'Pending',
-      icon: 'lightbulb',
-      color: 'bg-purple-100'
+      title: 'Database Normalization', 
+      course: 'CIT221 - Database Systems',
+      lastRead: '1 week ago',
+      progress: 30,
+      icon: 'database',
+      color: 'bg-yellow-100'
     },
     { 
       id: 4, 
-      title: 'Business Development', 
-      subject: 'CSC 305',
-      date: 'JAN 25, 2025',
-      time: 'At 08:00 PM',
-      marks: '55 Marks',
-      status: 'Pending',
-      icon: 'briefcase',
+      title: 'Software Development Lifecycle', 
+      course: 'CIT321 - Software Engineering',
+      lastRead: '3 days ago',
+      progress: 60,
+      icon: 'code',
       color: 'bg-blue-100'
     },
-  ];
-
-  const tasks = [
-    { id: 1, title: 'Math Class', subject: 'Class', date: 'JAN 02, 2025', time: 'At 01:00 PM' },
-    { id: 2, title: 'Batch Re-Union', subject: 'Cultural Activity', date: 'JAN 02, 2025', time: 'At 05:00 AM' },
-    { id: 3, title: 'Gardening Campaign', subject: 'Class', date: 'JAN 02, 2025', time: 'At 01:00 PM' },
-    { id: 4, title: 'System Analysis Class', subject: 'Class', date: 'JAN 02, 2025', time: 'At 01:00 PM' },
-    { id: 5, title: 'Data Structure Class', subject: 'Class', date: 'JAN 02, 2025', time: 'At 02:00 PM' },
   ];
 
   const getDaysInMonth = (date: Date) => {
@@ -239,10 +219,8 @@ const Dashboard = () => {
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         <div className="p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">N</span>
-            </div>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="NEXA Logo" className="w-8 h-8 object-contain" />
             <span className="text-xl font-bold">NEXA</span>
           </div>
         </div>
@@ -272,16 +250,16 @@ const Dashboard = () => {
             </svg>
             <span>Schedule</span>
           </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
+          <a href="/billing" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
             </svg>
-            <span>Resources</span>
+            <span>Billing</span>
           </a>
         </nav>
 
         <div className="p-4 border-t border-gray-800">
-          <a href="#" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
+          <a href="/help" className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800 rounded-lg mb-2 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -332,15 +310,30 @@ const Dashboard = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <input
-              type="text"
-              placeholder="Search or type a command"
-              className={`w-full max-w-md px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                isDarkMode ? 'bg-gray-700 text-white placeholder-gray-400' : 'bg-gray-100'
-              }`}
-            />
+            <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+              Welcome back, {profile?.full_name?.split(' ')[0] || 'Student'}!
+            </h2>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
+            {/* Subscription Badge */}
+            {profile?.subscription_tier === 'pro' ? (
+              <a
+                href="/billing"
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full text-sm font-semibold hover:from-yellow-500 hover:to-orange-600 transition-all"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                PRO
+              </a>
+            ) : (
+              <a
+                href="/billing"
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-200 text-gray-700 rounded-full text-sm font-semibold hover:bg-gray-300 transition-colors"
+              >
+                FREE
+              </a>
+            )}
             <button 
               onClick={toggleDarkMode}
               className={`p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
@@ -461,7 +454,7 @@ const Dashboard = () => {
                                 <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                   {notification.message}
                                 </p>
-                                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                                   {new Date(notification.created_at).toLocaleString()}
                                 </p>
                               </div>
@@ -473,7 +466,7 @@ const Dashboard = () => {
                           <svg className={`w-12 h-12 mx-auto mb-3 ${isDarkMode ? 'text-gray-600' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                           </svg>
-                          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                             No notifications
                           </p>
                         </div>
@@ -581,12 +574,26 @@ const Dashboard = () => {
               <div className="flex items-center justify-between mb-4">
                 <h3 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{monthName}</h3>
                 <div className="flex gap-2">
-                  <button className={`p-1 rounded ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+                  <button 
+                    onClick={() => {
+                      const newDate = new Date(currentDate);
+                      newDate.setMonth(newDate.getMonth() - 1);
+                      setCurrentDate(newDate);
+                    }}
+                    className={`p-1 rounded ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                  >
                     <svg className={`w-5 h-5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-                  <button className={`p-1 rounded ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
+                  <button 
+                    onClick={() => {
+                      const newDate = new Date(currentDate);
+                      newDate.setMonth(newDate.getMonth() + 1);
+                      setCurrentDate(newDate);
+                    }}
+                    className={`p-1 rounded ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                  >
                     <svg className={`w-5 h-5 ${isDarkMode ? 'text-white' : 'text-gray-900'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
@@ -606,16 +613,29 @@ const Dashboard = () => {
                 ))}
                 {Array.from({ length: daysInMonth }).map((_, i) => {
                   const day = i + 1;
-                  const isSelected = day === selectedDate;
+                  const isToday = day === new Date().getDate() && 
+                    currentDate.getMonth() === new Date().getMonth() && 
+                    currentDate.getFullYear() === new Date().getFullYear();
+                  const isSelected = day === selectedDate && 
+                    currentDate.getMonth() === new Date().getMonth() && 
+                    currentDate.getFullYear() === new Date().getFullYear();
                   return (
                     <button
                       key={day}
-                      className={`aspect-square flex items-center justify-center text-sm rounded-lg ${
+                      onClick={() => {
+                        setSelectedDate(day);
+                        const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                        setTaskDate(clickedDate);
+                        setShowTaskModal(true);
+                      }}
+                      className={`aspect-square flex items-center justify-center text-sm rounded-lg transition-colors ${
                         isSelected
                           ? 'bg-orange-500 text-white font-semibold'
-                          : isDarkMode 
-                            ? 'hover:bg-gray-700 text-gray-300' 
-                            : 'hover:bg-gray-100'
+                          : isToday
+                            ? 'bg-primary-100 text-primary-700 font-semibold'
+                            : isDarkMode 
+                              ? 'hover:bg-gray-700 text-gray-300' 
+                              : 'hover:bg-gray-100'
                       }`}
                     >
                       {day}
@@ -626,95 +646,128 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Assignments and Tasks */}
+          {/* Recent Summaries and Tasks */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-6">
-            {/* Assignments */}
+            {/* Recent Summaries */}
             <div className={`lg:col-span-2 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 sm:p-6`}>
               <div className="flex items-center justify-between mb-6">
-                <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Assignments</h3>
-                <a href="#" className="text-sm text-primary-600 hover:text-primary-700">
+                <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Continue Reading</h3>
+                <a href="/summaries" className="text-sm text-primary-600 hover:text-primary-700">
                   View all →
                 </a>
               </div>
               <div className="space-y-4">
-                {assignments.map((assignment) => (
-                  <div key={assignment.id} className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-lg transition-colors ${
+                {recentSummaries.map((summary) => (
+                  <div key={summary.id} className={`flex flex-col sm:flex-row items-start gap-4 p-4 rounded-lg transition-colors cursor-pointer ${
                     isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
-                  }`}>
-                    <div className={`w-12 h-12 ${assignment.color} rounded-lg flex items-center justify-center`}>
-                      {assignment.icon === 'chart' && (
+                  }`}
+                  onClick={() => window.location.href = '/summaries'}
+                  >
+                    <div className={`w-12 h-12 ${summary.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                      {summary.icon === 'book' && (
+                        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                      )}
+                      {summary.icon === 'chart' && (
                         <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                       )}
-                      {assignment.icon === 'search' && (
+                      {summary.icon === 'database' && (
                         <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
                         </svg>
                       )}
-                      {assignment.icon === 'lightbulb' && (
+                      {summary.icon === 'code' && (
                         <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                      )}
-                      {assignment.icon === 'briefcase' && (
-                        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                         </svg>
                       )}
                     </div>
-                    <div className="flex-1">
-                      <h4 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{assignment.title}</h4>
-                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{assignment.subject}</p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-1`}>{summary.title}</h4>
+                      <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-2`}>{summary.course}</p>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <div className={`h-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                            <div 
+                              className="h-2 rounded-full bg-primary-600"
+                              style={{ width: `${summary.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        <span className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {summary.progress}%
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{assignment.date}</p>
-                      <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{assignment.time}</p>
-                    </div>
-                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {assignment.marks}
-                    </div>
-                    <div>
-                      <span className={`px-4 py-1 rounded-full text-sm font-medium ${
-                        assignment.status === 'Pending' 
-                          ? 'bg-orange-100 text-orange-700' 
-                          : 'bg-green-100 text-green-700'
-                      }`}>
-                        {assignment.status}
-                      </span>
+                    <div className="flex flex-col items-end gap-2">
+                      <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        Last read: {summary.lastRead}
+                      </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.location.href = '/summaries';
+                        }}
+                        className="px-4 py-1.5 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 font-medium"
+                      >
+                        Continue Reading
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Tasks */}
-            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 sm:p-6`}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Tasks</h3>
-                <a href="#" className="text-sm text-primary-600 hover:text-primary-700">
-                  View all
-                </a>
-              </div>
-              <div className="space-y-4">
-                {tasks.map((task) => (
-                  <div key={task.id} className="flex items-start gap-3">
-                    <input type="checkbox" className="mt-1 w-4 h-4 text-primary-600 rounded" />
-                    <div className="flex-1">
-                      <h4 className={`font-medium text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{task.title}</h4>
-                      <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>{task.subject}</p>
-                      <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                        {task.date}<br />{task.time}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Todo Tasks */}
+            <TodoList />
           </div>
         </div>
       </main>
       </div>
+
+      {/* Task Creation Modal */}
+      {showTaskModal && taskDate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className={`max-w-md w-full ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl p-6`}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                Add Task for {taskDate.toLocaleDateString()}
+              </h3>
+              <button
+                onClick={() => setShowTaskModal(false)}
+                className={`p-2 rounded-lg ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              You can create tasks and schedule items from the Schedule page.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowTaskModal(false);
+                  window.location.href = '/schedule';
+                }}
+                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium"
+              >
+                Go to Schedule
+              </button>
+              <button
+                onClick={() => setShowTaskModal(false)}
+                className={`px-4 py-2 rounded-lg font-medium ${isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

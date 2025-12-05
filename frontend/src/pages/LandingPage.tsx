@@ -6,10 +6,12 @@ import Review from '../components/Review'
 import FAQ from '../components/Faq'
 import Contact from '../components/Contact'
 import Footer from '../components/Footer'
+import AnnouncementBanner from '../components/AnnouncementBanner'
 
 const LandingPage = () => {
   return (
     <div className="min-h-screen">
+      <AnnouncementBanner />
       <Navbar />
       <section id="home">
         <HeroSection />

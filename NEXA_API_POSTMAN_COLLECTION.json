@@ -1,0 +1,606 @@
+{
+  "info": {
+    "name": "NEXA API Collection",
+    "description": "Complete API collection for testing NEXA courses and questions endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "https://your-project.supabase.co/functions/v1",
+      "type": "string"
+    },
+    {
+      "key": "SUPABASE_URL",
+      "value": "https://your-project.supabase.co",
+      "type": "string"
+    },
+    {
+      "key": "SUPABASE_ANON_KEY",
+      "value": "your-anon-key-here",
+      "type": "string"
+    },
+    {
+      "key": "ACCESS_TOKEN",
+      "value": "your-access-token-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Sign In (Get Access Token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"your-email@example.com\",\n  \"password\": \"your-password\"\n}"
+            },
+            "url": {
+              "raw": "{{SUPABASE_URL}}/auth/v1/token?grant_type=password",
+              "host": ["{{SUPABASE_URL}}"],
+              "path": ["auth", "v1", "token"],
+              "query": [
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                }
+              ]
+            },
+            "description": "Sign in to get access token. Copy the access_token from response and set it in the ACCESS_TOKEN variable."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Get All Courses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/get-courses",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get-courses"]
+            },
+            "description": "Fetch all active courses. Returns array of courses with their IDs."
+          }
+        },
+        {
+          "name": "Get Courses by Level",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/get-courses?level=100 Level",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get-courses"],
+              "query": [
+                {
+                  "key": "level",
+                  "value": "100 Level"
+                }
+              ]
+            },
+            "description": "Filter courses by level (e.g., '100 Level', '200 Level')"
+          }
+        },
+        {
+          "name": "Get Courses by Department",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/get-courses?department=Computer Science",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get-courses"],
+              "query": [
+                {
+                  "key": "department",
+                  "value": "Computer Science"
+                }
+              ]
+            },
+            "description": "Filter courses by department"
+          }
+        },
+        {
+          "name": "Get Active Courses Only",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/get-courses?isActive=true",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get-courses"],
+              "query": [
+                {
+                  "key": "isActive",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Get only active courses"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Questions",
+      "item": [
+        {
+          "name": "Get Course Questions by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/get-course-questions?courseId=PASTE_COURSE_UUID_HERE",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get-course-questions"],
+              "query": [
+                {
+                  "key": "courseId",
+                  "value": "PASTE_COURSE_UUID_HERE",
+                  "description": "Replace with actual course UUID from get-courses response"
+                }
+              ]
+            },
+            "description": "Get all questions for a specific course. Use the course UUID (id field) from get-courses response."
+          }
+        },
+        {
+          "name": "Get Limited Course Questions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/get-course-questions?courseId=PASTE_COURSE_UUID_HERE&limit=10",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get-course-questions"],
+              "query": [
+                {
+                  "key": "courseId",
+                  "value": "PASTE_COURSE_UUID_HERE"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Limit number of questions returned"
+                }
+              ]
+            },
+            "description": "Get limited number of questions for a course (useful for practice tests)"
+          }
+        },
+        {
+          "name": "Get Question Count by Course ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/get-course-question-count?courseId=PASTE_COURSE_UUID_HERE",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get-course-question-count"],
+              "query": [
+                {
+                  "key": "courseId",
+                  "value": "PASTE_COURSE_UUID_HERE"
+                }
+              ]
+            },
+            "description": "Get the total count of questions for a specific course"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Direct Supabase REST API",
+      "item": [
+        {
+          "name": "Get Course by Code (REST)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPABASE_URL}}/rest/v1/courses?code=eq.CIT104&select=*",
+              "host": ["{{SUPABASE_URL}}"],
+              "path": ["rest", "v1", "courses"],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "eq.CIT104",
+                  "description": "Change CIT104 to any course code"
+                },
+                {
+                  "key": "select",
+                  "value": "*"
+                }
+              ]
+            },
+            "description": "Direct REST API call to get course by code. Useful for debugging."
+          }
+        },
+        {
+          "name": "Get Questions by Course ID (REST)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPABASE_URL}}/rest/v1/questions?course_id=eq.PASTE_COURSE_UUID_HERE&select=*",
+              "host": ["{{SUPABASE_URL}}"],
+              "path": ["rest", "v1", "questions"],
+              "query": [
+                {
+                  "key": "course_id",
+                  "value": "eq.PASTE_COURSE_UUID_HERE"
+                },
+                {
+                  "key": "select",
+                  "value": "*"
+                }
+              ]
+            },
+            "description": "Direct REST API call to get questions by course ID"
+          }
+        },
+        {
+          "name": "Count Questions by Course ID (REST)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "Prefer",
+                "value": "count=exact",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPABASE_URL}}/rest/v1/questions?course_id=eq.PASTE_COURSE_UUID_HERE&select=count",
+              "host": ["{{SUPABASE_URL}}"],
+              "path": ["rest", "v1", "questions"],
+              "query": [
+                {
+                  "key": "course_id",
+                  "value": "eq.PASTE_COURSE_UUID_HERE"
+                },
+                {
+                  "key": "select",
+                  "value": "count"
+                }
+              ]
+            },
+            "description": "Get count of questions using REST API. Check Content-Range header in response."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Testing Specific Courses",
+      "item": [
+        {
+          "name": "Test CIT104 - Step 1: Get Course",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPABASE_URL}}/rest/v1/courses?code=eq.CIT104&select=id,code,title",
+              "host": ["{{SUPABASE_URL}}"],
+              "path": ["rest", "v1", "courses"],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "eq.CIT104"
+                },
+                {
+                  "key": "select",
+                  "value": "id,code,title"
+                }
+              ]
+            },
+            "description": "Step 1: Get CIT104 course UUID. Copy the 'id' field from response."
+          }
+        },
+        {
+          "name": "Test CIT104 - Step 2: Get Questions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/get-course-questions?courseId=PASTE_CIT104_UUID_HERE",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get-course-questions"],
+              "query": [
+                {
+                  "key": "courseId",
+                  "value": "PASTE_CIT104_UUID_HERE",
+                  "description": "Paste the UUID from Step 1"
+                }
+              ]
+            },
+            "description": "Step 2: Get CIT104 questions using the UUID from Step 1"
+          }
+        },
+        {
+          "name": "Test CHM201 - Step 1: Get Course",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPABASE_URL}}/rest/v1/courses?code=eq.CHM201&select=id,code,title",
+              "host": ["{{SUPABASE_URL}}"],
+              "path": ["rest", "v1", "courses"],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "eq.CHM201"
+                },
+                {
+                  "key": "select",
+                  "value": "id,code,title"
+                }
+              ]
+            },
+            "description": "Step 1: Get CHM201 course UUID"
+          }
+        },
+        {
+          "name": "Test CHM201 - Step 2: Get Questions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/get-course-questions?courseId=PASTE_CHM201_UUID_HERE",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get-course-questions"],
+              "query": [
+                {
+                  "key": "courseId",
+                  "value": "PASTE_CHM201_UUID_HERE"
+                }
+              ]
+            },
+            "description": "Step 2: Get CHM201 questions"
+          }
+        },
+        {
+          "name": "Test CHM205 - Step 1: Get Course",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{SUPABASE_URL}}/rest/v1/courses?code=eq.CHM205&select=id,code,title",
+              "host": ["{{SUPABASE_URL}}"],
+              "path": ["rest", "v1", "courses"],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "eq.CHM205"
+                },
+                {
+                  "key": "select",
+                  "value": "id,code,title"
+                }
+              ]
+            },
+            "description": "Step 1: Get CHM205 course UUID"
+          }
+        },
+        {
+          "name": "Test CHM205 - Step 2: Get Questions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{ACCESS_TOKEN}}",
+                "type": "text"
+              },
+              {
+                "key": "apikey",
+                "value": "{{SUPABASE_ANON_KEY}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/get-course-questions?courseId=PASTE_CHM205_UUID_HERE",
+              "host": ["{{BASE_URL}}"],
+              "path": ["get-course-questions"],
+              "query": [
+                {
+                  "key": "courseId",
+                  "value": "PASTE_CHM205_UUID_HERE"
+                }
+              ]
+            },
+            "description": "Step 2: Get CHM205 questions"
+          }
+        }
+      ]
+    }
+  ]
+}

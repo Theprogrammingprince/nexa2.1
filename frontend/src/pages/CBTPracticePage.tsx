@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import supabase from '../supabaseClient';
-import { courseQuestionsAPI } from '../services/api';
 import toast, { Toaster } from 'react-hot-toast';
 import DashboardLayout from '../components/DashboardLayout';
-import { BookOpen, Clock, FileText, Search, Filter } from 'lucide-react';
+import CourseCard from '../components/CourseCard';
+import OnboardingTutorial from '../components/OnboardingTutorial';
+import Tooltip from '../components/Tooltip';
+import { useCoursesWithCounts } from '../hooks/useCourses';
+import { useDebounce } from '../hooks/useDebounce';
+import { BookOpen, Search, Filter } from 'lucide-react';
 
 interface Course {
   id: string;
@@ -22,72 +25,86 @@ const CBTPracticePage = () => {
   const { isDarkMode } = useTheme();
   const navigate = useNavigate();
   
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Fetch courses with React Query (cached and optimized)
+  const { courses, isLoading, error } = useCoursesWithCounts();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedSemester, setSelectedSemester] = useState('all');
 
-  useEffect(() => {
-    fetchCourses();
-  }, []);
+  // Tutorial steps for onboarding
+  const tutorialSteps = [
+    {
+      title: 'Browse Courses',
+      subtitle: 'Available Courses',
+      description: 'Browse through all your registered NOUN courses. Each card displays the course code, title, and number of available practice questions.',
+      image: '/onboarding/courses.png',
+      buttonText: 'View Courses',
+      buttonColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
+    },
+    {
+      title: 'Search & Filter',
+      subtitle: 'Find Your Course',
+      description: 'Use the powerful search and filter options to quickly find courses by name, level, department, or semester.',
+      image: '/onboarding/search.png',
+      buttonText: 'Try Search',
+      buttonColor: 'bg-gradient-to-r from-purple-500 to-purple-600',
+    },
+    {
+      title: 'Start Practice Test',
+      subtitle: 'Begin Testing',
+      description: 'Click on any course to view instructions and start a timed practice test. Customize the number of questions and duration.',
+      image: '/onboarding/test.png',
+      buttonText: 'Start Test',
+      buttonColor: 'bg-gradient-to-r from-green-500 to-green-600',
+    },
+    {
+      title: 'View Results',
+      subtitle: 'Track Performance',
+      description: 'After completing tests, review detailed results with correct answers and explanations. Track your progress over time.',
+      image: '/onboarding/results.png',
+      buttonText: 'View Results',
+      buttonColor: 'bg-gradient-to-r from-orange-500 to-orange-600',
+    },
+    {
+      title: 'AI Explanations',
+      subtitle: 'Learn Better',
+      description: 'Get instant AI-powered explanations for questions you got wrong. Nexa AI helps you understand concepts deeply.',
+      image: '/onboarding/ai.png',
+      buttonText: 'Try AI',
+      buttonColor: 'bg-gradient-to-r from-pink-500 to-pink-600',
+    },
+  ];
+  
+  // Debounce search query to reduce filtering operations
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  useEffect(() => {
-    filterCourses();
-  }, [searchQuery, selectedLevel, selectedDepartment, selectedSemester, courses]);
+  // Show error toast if courses fail to load
+  if (error) {
+    toast.error('Failed to load courses');
+  }
 
-  const fetchCourses = async () => {
-    try {
-      // Fetch courses directly from Supabase (public data)
-      const { data, error } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('is_active', true)
-        .order('level', { ascending: true })
-        .order('code', { ascending: true });
-
-      if (error) throw error;
-
-      // Fetch question counts for each course using the API
-      const coursesWithCounts = await Promise.all(
-        (data || []).map(async (course) => {
-          try {
-            const response = await courseQuestionsAPI.getQuestionCount(course.id);
-            return {
-              ...course,
-              question_count: response.count || 0
-            };
-          } catch (error) {
-            console.error(`Error fetching count for ${course.code}:`, error);
-            return {
-              ...course,
-              question_count: 0
-            };
-          }
-        })
-      );
-
-      setCourses(coursesWithCounts);
-      setFilteredCourses(coursesWithCounts);
-    } catch (error: any) {
-      toast.error('Failed to load courses');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterCourses = () => {
+  // Memoized filtering logic - only recalculates when dependencies change
+  const filteredCourses = useMemo(() => {
     let filtered = courses;
 
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(course =>
-        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        course.code.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    // Search filter - now includes level and department with smart matching
+    if (debouncedSearchQuery) {
+      const query = debouncedSearchQuery.toLowerCase().trim();
+      filtered = filtered.filter(course => {
+        // Normalize level for better matching (e.g., "200L" matches "200 Level")
+        const normalizedLevel = course.level?.toLowerCase().replace(/\s+/g, '') || '';
+        const normalizedQuery = query.replace(/\s+/g, '');
+        
+        return (
+          course.title?.toLowerCase().includes(query) ||
+          course.code?.toLowerCase().includes(query) ||
+          course.level?.toLowerCase().includes(query) ||
+          normalizedLevel.includes(normalizedQuery) ||
+          course.department?.toLowerCase().includes(query)
+        );
+      });
     }
 
     // Level filter
@@ -105,22 +122,37 @@ const CBTPracticePage = () => {
       filtered = filtered.filter(course => course.semester === parseInt(selectedSemester));
     }
 
-    setFilteredCourses(filtered);
-  };
+    return filtered;
+  }, [courses, debouncedSearchQuery, selectedLevel, selectedDepartment, selectedSemester]);
 
-  const handleCourseClick = (course: Course) => {
+  // Memoized callback to prevent unnecessary re-renders
+  const handleCourseClick = useCallback((course: Course) => {
     navigate(`/cbt/instruction/${course.id}`);
-  };
+  }, [navigate]);
 
-  const getDepartments = () => {
-    const departments = new Set(courses.map(c => c.department));
-    return Array.from(departments).sort();
-  };
+  // Memoized departments list
+  const departments = useMemo(() => {
+    const depts = new Set(courses.map(c => c.department));
+    return Array.from(depts).sort();
+  }, [courses]);
 
-  const getLevels = () => {
-    const levels = new Set(courses.map(c => c.level));
-    return Array.from(levels).sort();
-  };
+  // Memoized levels list
+  const levels = useMemo(() => {
+    const lvls = new Set(courses.map(c => c.level));
+    const levelArray = Array.from(lvls);
+    
+    // Remove duplicates like "200" if "200 Level" exists
+    const filtered = levelArray.filter(level => {
+      // If this is just a number (like "200"), check if there's a "XXX Level" version
+      if (/^\d+$/.test(level)) {
+        const levelVersion = `${level} Level`;
+        return !levelArray.includes(levelVersion);
+      }
+      return true;
+    });
+    
+    return filtered.sort();
+  }, [courses]);
 
   const getColorForDepartment = (department: string) => {
     const colors: { [key: string]: string } = {
@@ -134,7 +166,12 @@ const CBTPracticePage = () => {
     return colors[department] || 'from-gray-500 to-gray-600';
   };
 
-  if (loading) {
+  const restartTutorial = () => {
+    localStorage.removeItem('cbt-tutorial-completed');
+    window.location.reload();
+  };
+
+  if (isLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="text-center">
@@ -148,6 +185,12 @@ const CBTPracticePage = () => {
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} />
+      <OnboardingTutorial
+        steps={tutorialSteps}
+        onComplete={() => toast.success('Welcome to NEXA CBT Practice! 🎉')}
+        onSkip={() => toast('You can restart the tutorial anytime by clicking Tutorial on the CBT Page', { icon: 'ℹ️' })}
+        storageKey="cbt-tutorial-completed"
+      />
       <DashboardLayout currentPage="/cbt">
           <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-sm p-6`}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -162,6 +205,9 @@ const CBTPracticePage = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={`w-full pl-10 pr-4 py-2 rounded-lg border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'} focus:ring-2 focus:ring-primary-500 focus:border-transparent`}
                   />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <Tooltip content="Search by course code, title, level, or department" position="bottom" />
+                  </div>
                 </div>
               </div>
 
@@ -173,7 +219,7 @@ const CBTPracticePage = () => {
                   className={`w-full px-4 py-2 rounded-lg border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:ring-2 focus:ring-primary-500 focus:border-transparent`}
                 >
                   <option value="all">All Levels</option>
-                  {getLevels().map(level => (
+                  {levels.map(level => (
                     <option key={level} value={level}>{level}</option>
                   ))}
                 </select>
@@ -187,7 +233,7 @@ const CBTPracticePage = () => {
                   className={`w-full px-4 py-2 rounded-lg border ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} focus:ring-2 focus:ring-primary-500 focus:border-transparent`}
                 >
                   <option value="all">All Departments</option>
-                  {getDepartments().map(dept => (
+                  {departments.map(dept => (
                     <option key={dept} value={dept}>{dept}</option>
                   ))}
                 </select>
@@ -207,9 +253,20 @@ const CBTPracticePage = () => {
               </div>
             </div>
 
-            <div className={`mt-4 flex items-center gap-2 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              <Filter size={16} />
-              <span>Showing {filteredCourses.length} of {courses.length} courses</span>
+            <div className={`mt-4 flex items-center justify-between text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              <div className="flex items-center gap-2">
+                <Filter size={16} />
+                <span>Showing {filteredCourses.length} of {courses.length} courses</span>
+              </div>
+              <button
+                onClick={restartTutorial}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                <BookOpen size={14} />
+                Tutorial
+              </button>
             </div>
           </div>
 
@@ -221,70 +278,20 @@ const CBTPracticePage = () => {
               <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 No courses found
               </h3>
-              <p className={`mt-2 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+              <p className={`mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Try adjusting your filters
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCourses.map((course) => (
-                <div
+                <CourseCard
                   key={course.id}
-                  onClick={() => handleCourseClick(course)}
-                  className={`${isDarkMode ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-xl'} rounded-xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 transform hover:-translate-y-1`}
-                >
-                  {/* Course Header with Gradient */}
-                  <div className={`bg-gradient-to-r ${getColorForDepartment(course.department)} p-6 text-white`}>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="text-lg font-bold mb-1">{course.code}</h3>
-                        <p className="text-sm opacity-90">{course.level}</p>
-                      </div>
-                      <div className="bg-white bg-opacity-20 rounded-lg px-3 py-1">
-                        <p className="text-xs font-semibold">Sem {course.semester}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Course Body */}
-                  <div className="p-6">
-                    <h4 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'} mb-3 line-clamp-2`}>
-                      {course.title}
-                    </h4>
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm">
-                        <BookOpen size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
-                        <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                          {course.department}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <FileText size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
-                        <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                          {course.question_count || 0} Questions Available
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <Clock size={16} className={isDarkMode ? 'text-gray-400' : 'text-gray-500'} />
-                        <span className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                          {course.credits} Credit Units
-                        </span>
-                      </div>
-                    </div>
-
-                    <button
-                      className={`w-full py-2 rounded-lg font-semibold transition-colors ${
-                        course.question_count && course.question_count > 0
-                          ? 'bg-primary-600 text-white hover:bg-primary-700'
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      }`}
-                      disabled={!course.question_count || course.question_count === 0}
-                    >
-                      {course.question_count && course.question_count > 0 ? 'Start Practice' : 'Coming Soon'}
-                    </button>
-                  </div>
-                </div>
+                  course={course}
+                  isDarkMode={isDarkMode}
+                  onCourseClick={handleCourseClick}
+                  getColorForDepartment={getColorForDepartment}
+                />
               ))}
             </div>
           )}

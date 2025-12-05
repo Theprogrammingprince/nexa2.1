@@ -24,6 +24,11 @@ export interface Profile {
     level?: string;
     phone?: string;
     avatar_url?: string;
+    subscription_tier?: 'free' | 'pro';
+    subscription_status?: 'active' | 'cancelled' | 'expired' | 'trialing';
+    subscription_start_date?: string;
+    subscription_end_date?: string;
+    stripe_customer_id?: string;
     created_at: string;
     updated_at: string;
 }

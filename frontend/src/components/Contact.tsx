@@ -1,5 +1,7 @@
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import { useState } from 'react';
+import { supportAPI } from '../services/api';
+import toast from 'react-hot-toast';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -8,6 +10,7 @@ const Contact = () => {
     subject: '',
     message: '',
   });
+  const [loading, setLoading] = useState(false);
 
   const contactInfo = [
     {
@@ -35,13 +38,35 @@ const Contact = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted:', formData);
-    // Reset form
-    setFormData({ name: '', email: '', subject: '', message: '' });
-    alert('Thank you for your message! We will get back to you soon.');
+    setLoading(true);
+
+    try {
+      console.log('📧 Sending contact message:', formData);
+      const response = await supportAPI.sendMessage({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+        priority: 'normal'
+      });
+
+      console.log('📧 Contact form response:', response);
+
+      if (response.success) {
+        toast.success('Message sent successfully! We will get back to you soon. ✉️');
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        console.error('❌ Message sending failed:', response);
+        toast.error(response.error || 'Failed to send message. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ Contact form error:', error);
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -157,10 +182,11 @@ const Contact = () => {
               </div>
               <button
                 type="submit"
-                className="w-full relative group overflow-hidden rounded-lg bg-gradient-to-r from-teal-600 to-cyan-600 p-0.5 shadow-md hover:shadow-lg transition-all duration-300"
+                disabled={loading}
+                className="w-full relative group overflow-hidden rounded-lg bg-gradient-to-r from-teal-600 to-cyan-600 p-0.5 shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="relative px-6 py-3 rounded-lg bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-medium flex items-center justify-center gap-2 group-hover:gap-3 transition-all duration-300">
-                  Send Message
+                  {loading ? 'Sending...' : 'Send Message'}
                   <Send size={18} />
                 </div>
               </button>

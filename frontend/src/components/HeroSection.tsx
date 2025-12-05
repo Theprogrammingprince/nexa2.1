@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const HeroSection = () => {
   return (
     <section className="relative bg-gradient-to-br from-gray-50 via-white to-teal-50 py-16 md:py-24 lg:py-32 overflow-hidden">
@@ -56,19 +58,22 @@ const HeroSection = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
-              <button className="relative group overflow-hidden rounded-full bg-gradient-to-r from-teal-600 to-cyan-600 p-0.5 shadow-xl hover:shadow-2xl transition-all duration-300">
+              <Link
+                to="/auth"
+                className="relative group overflow-hidden rounded-full bg-gradient-to-r from-teal-600 to-cyan-600 p-0.5 shadow-xl hover:shadow-2xl transition-all duration-300"
+              >
                 <div className="relative px-8 py-4 rounded-full bg-white text-teal-600 font-bold text-lg transition-all duration-300 group-hover:bg-transparent group-hover:text-white flex items-center justify-center gap-2">
                   Get Started
                   <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
                 </div>
-              </button>
-              <a
-                href="/auth"
+              </Link>
+              <Link
+                to="/auth"
                 className="group relative overflow-hidden rounded-full border-2 border-teal-600 px-8 py-4 font-bold text-teal-600 text-lg transition-all duration-300 hover:bg-teal-50 flex items-center justify-center gap-2"
               >
                 Sign In
                 <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
-              </a>
+              </Link>
             </div>
           </div>
 

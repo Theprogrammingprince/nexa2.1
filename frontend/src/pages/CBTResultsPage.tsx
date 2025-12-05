@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { CheckCircle, XCircle, Clock, Award, TrendingUp, Home, RotateCcw, Sparkles } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Award, TrendingUp, Home, RotateCcw, Sparkles, Brain } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Question {
@@ -47,6 +47,23 @@ const CBTResultsPage = () => {
     }
   }, [resultsData, navigate]);
 
+  // Handle browser back button - redirect to CBT page instead of test page
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      event.preventDefault();
+      navigate('/cbt', { replace: true });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Replace current history entry to prevent going back to test
+    window.history.pushState(null, '', window.location.pathname);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [navigate]);
+
   if (!resultsData) return null;
 
   const { score, correctCount, totalQuestions, timeTaken, questions, userAnswers, course } = resultsData;
@@ -88,30 +105,44 @@ const CBTResultsPage = () => {
       const question = questions[questionIndex];
       const userAnswer = userAnswers[questionIndex];
       
-      // Simulated AI explanation (replace with actual AI API call)
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Import the API service
+      const { courseQuestionsAPI } = await import('../services/api');
       
-      const explanation = `
-**Why this answer is incorrect:**
-
-Your answer: "${getAnswerLabel(question, userAnswer)}"
-Correct answer: "${getAnswerLabel(question, question.correct_answer)}"
-
-${question.explanation || 'The correct answer provides the most accurate response based on the question context.'}
-
-**Key Concept:**
-${question.question_type === 'fill_in_blank' 
-  ? 'For fill-in-blank questions, the answer must match exactly (case-sensitive).'
-  : 'Multiple choice questions require selecting the most appropriate option from the given choices.'}
-
-**Study Tip:**
-Review the course material related to this topic to strengthen your understanding.
-      `.trim();
+      // Call the AI explanation API
+      const response = await courseQuestionsAPI.getAIExplanation({
+        questionId: question.id,
+        questionText: question.question_text,
+        questionType: question.question_type,
+        userAnswer: userAnswer || '',
+        correctAnswer: question.correct_answer,
+        options: {
+          option_a: question.option_a || undefined,
+          option_b: question.option_b || undefined,
+          option_c: question.option_c || undefined,
+          option_d: question.option_d || undefined,
+        },
+        courseId: course.id,
+      });
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      const explanation = response.explanation || 'Unable to generate explanation at this time.';
       
       setAiExplanation(prev => ({ ...prev, [questionIndex]: explanation }));
       setShowExplanation(questionIndex);
+      
+      // Show a subtle indicator if using fallback vs AI
+      if (response.source === 'fallback') {
+        toast('Using basic explanation. Contact admin to enable AI features.', {
+          icon: 'ℹ️',
+          duration: 3000,
+        });
+      }
     } catch (error) {
-      toast.error('Failed to generate explanation');
+      console.error('Error generating explanation:', error);
+      toast.error('Failed to generate explanation. Please try again.');
     } finally {
       setLoadingExplanation(null);
     }
@@ -278,11 +309,65 @@ Review the course material related to this topic to strengthen your understandin
                           </button>
 
                           {showingExplanation && aiExplanation[index] && (
-                            <div className="p-4 bg-white rounded-lg border border-purple-200">
-                              <div className="prose prose-sm max-w-none">
-                                {aiExplanation[index].split('\n').map((line, i) => (
-                                  <p key={i} className="mb-2 text-gray-700">{line}</p>
-                                ))}
+                            <div className="relative overflow-hidden rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 via-white to-blue-50 shadow-lg">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-200 rounded-full blur-3xl opacity-20"></div>
+                              <div className="relative p-6">
+                                <div className="flex items-center gap-2 mb-4 pb-3 border-b border-purple-200">
+                                  <Brain className="w-5 h-5 text-purple-600" />
+                                  <h4 className="font-semibold text-purple-900">Nexa AI Explanation</h4>
+                                </div>
+                                <div className="prose prose-sm max-w-none">
+                                  {aiExplanation[index].split('\n').map((line, i) => {
+                                    if (!line.trim()) return <div key={i} className="h-2"></div>;
+                                    
+                                    // Handle headers (##)
+                                    if (line.startsWith('## ')) {
+                                      return (
+                                        <h3 key={i} className="text-lg font-bold text-purple-900 mt-4 mb-2">
+                                          {line.replace('## ', '')}
+                                        </h3>
+                                      );
+                                    }
+                                    
+                                    // Handle subheaders (###)
+                                    if (line.startsWith('### ')) {
+                                      return (
+                                        <h4 key={i} className="text-base font-semibold text-purple-800 mt-3 mb-2">
+                                          {line.replace('### ', '')}
+                                        </h4>
+                                      );
+                                    }
+                                    
+                                    // Handle bold text (**text**)
+                                    const renderTextWithBold = (text: string) => {
+                                      const parts = text.split(/\*\*(.*?)\*\*/g);
+                                      return parts.map((part, idx) => 
+                                        idx % 2 === 1 ? (
+                                          <strong key={idx} className="font-bold text-gray-900">{part}</strong>
+                                        ) : (
+                                          <span key={idx}>{part}</span>
+                                        )
+                                      );
+                                    };
+                                    
+                                    // Handle list items
+                                    if (line.trim().match(/^\d+\./)) {
+                                      return (
+                                        <div key={i} className="flex gap-2 mb-2 ml-2">
+                                          <span className="text-purple-600 font-semibold">{line.match(/^\d+\./)}</span>
+                                          <p className="text-gray-700 flex-1">{renderTextWithBold(line.replace(/^\d+\.\s*/, ''))}</p>
+                                        </div>
+                                      );
+                                    }
+                                    
+                                    // Regular paragraphs
+                                    return (
+                                      <p key={i} className="mb-3 text-gray-700 leading-relaxed">
+                                        {renderTextWithBold(line)}
+                                      </p>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             </div>
                           )}

@@ -158,7 +158,7 @@ const CBTInstructionPage = () => {
                   {course.title}
                 </h1>
                 <div className="flex items-center gap-4">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${isDarkMode ? 'bg-primary-900 text-primary-300' : 'bg-primary-100 text-primary-700'}`}>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${isDarkMode ? 'bg-primary-900 text-white' : 'bg-primary-100 text-primary-700'}`}>
                     {course.code}
                   </span>
                   <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -294,7 +294,7 @@ const CBTInstructionPage = () => {
               disabled={!agreedToTerms || availableQuestions === 0}
               className={`px-8 py-4 rounded-xl font-semibold text-lg flex items-center gap-3 transition-all ${
                 agreedToTerms && availableQuestions > 0
-                  ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl'
+                  ? 'bg-green-800 text-white hover:bg-primary-700 shadow-lg hover:shadow-xl'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >

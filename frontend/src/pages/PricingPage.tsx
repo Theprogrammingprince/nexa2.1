@@ -29,7 +29,7 @@ const PricingPage = () => {
     {
       id: 'pro',
       name: 'Pro Plan',
-      price: { monthly: 5000, yearly: 50000 },
+      price: { monthly: 2000, yearly: 20000 },
       description: 'Unlock your full potential with unlimited access',
       features: [
         { text: 'Unlimited course summaries', included: true },
@@ -47,28 +47,6 @@ const PricingPage = () => {
       ],
       cta: 'Upgrade to Pro',
       popular: true,
-    },
-    {
-      id: 'institution',
-      name: 'Institution Plan',
-      price: { monthly: 150000, yearly: 1500000 },
-      description: 'For schools and training centers (up to 100 students)',
-      features: [
-        { text: 'Everything in Pro Plan', included: true },
-        { text: 'Up to 100 student accounts', included: true },
-        { text: 'Admin dashboard & controls', included: true },
-        { text: 'Bulk student management', included: true },
-        { text: 'Custom branding options', included: true },
-        { text: 'Dedicated account manager', included: true },
-        { text: 'API access for integration', included: true },
-        { text: 'Custom reporting & analytics', included: true },
-        { text: 'White-label option available', included: true },
-        { text: 'SLA guarantee (99.9% uptime)', included: true },
-        { text: 'On-site training sessions', included: true },
-        { text: 'Priority feature requests', included: true },
-      ],
-      cta: 'Contact Sales',
-      popular: false,
     },
   ];
 
@@ -148,7 +126,7 @@ const PricingPage = () => {
 
       {/* Pricing Cards */}
       <section className="pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
           {plans.map((plan) => {
             const savings = getSavings(plan);
             const price = billingCycle === 'monthly' ? plan.price.monthly : plan.price.yearly;

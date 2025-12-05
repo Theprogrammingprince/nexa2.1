@@ -7,11 +7,11 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Features', href: '#features' },
-    { name: 'About', href: '#about' },
-    { name: 'Reviews', href: '#reviews' },
-    { name: 'FAQ', href: '#faq' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Features', href: '/features' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Docs', href: '/docs' },
+    { name: 'Contact', href: '/contact' },
   ];
 
   return (
@@ -21,9 +21,7 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center gap-3">
-              <div className="w-11 h-11 bg-gradient-to-br from-teal-600 to-cyan-600 rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-white font-bold text-xl">N</span>
-              </div>
+              <img src="/logo.png" alt="NEXA Logo" className="w-9 h-9 object-contain" />
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-gray-900">NEXA</h1>
                 <p className="text-xs text-gray-500 -mt-1">Exam Success Platform</p>
@@ -93,12 +91,13 @@ const Navbar = () => {
               >
                 Sign In
               </Link>
-              <button 
-                className="w-full px-4 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg font-medium transition-all duration-200 hover:shadow-lg"
+              <Link
+                to="/auth"
+                className="block w-full px-4 py-2.5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-lg font-medium transition-all duration-200 hover:shadow-lg text-center"
                 onClick={() => setIsOpen(false)}
               >
                 Get Started
-              </button>
+              </Link>
             </div>
           </div>
         </div>

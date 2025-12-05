@@ -117,11 +117,6 @@ const CBTTestPage = () => {
       const userAnswer = answers[index];
       const correctAnswer = question.correct_answer;
       
-      console.log('Question:', question.question_text);
-      console.log('User Answer:', userAnswer);
-      console.log('Correct Answer:', correctAnswer);
-      console.log('Question Type:', question.question_type);
-      
       // For fill-in-blank, do exact match (case-sensitive, trimmed)
       if (question.question_type === 'fill_in_blank') {
         // Trim whitespace and compare
@@ -130,17 +125,11 @@ const CBTTestPage = () => {
         
         if (trimmedUserAnswer === trimmedCorrectAnswer) {
           correctCount++;
-          console.log('✓ Correct!');
-        } else {
-          console.log('✗ Incorrect');
         }
       } else {
         // For multiple choice, compare answer letters
         if (userAnswer === correctAnswer) {
           correctCount++;
-          console.log('✓ Correct!');
-        } else {
-          console.log('✗ Incorrect');
         }
       }
     });
@@ -151,10 +140,6 @@ const CBTTestPage = () => {
 
     // Save test result to database
     try {
-      console.log('🔍 Current user:', user);
-      console.log('🔍 User ID:', user?.id);
-      console.log('🔍 Course ID:', courseId);
-      
       const submissionData = {
         user_id: user?.id,
         course_id: courseId,
@@ -167,10 +152,7 @@ const CBTTestPage = () => {
         status: 'submitted' // Valid enum: 'in_progress', 'submitted', 'graded'
       };
       
-      console.log('💾 Attempting to save test submission...');
-      console.log('📋 Submission data:', JSON.stringify(submissionData, null, 2));
-      
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('test_submissions')
         .insert(submissionData)
         .select();
@@ -183,16 +165,11 @@ const CBTTestPage = () => {
         toast.error(`Failed to save test: ${error.message}`);
         throw error;
       }
-      
-      console.log('✅ Test saved successfully to database!');
-      console.log('✅ Saved data:', data);
-      console.log('✅ Inserted record ID:', data?.[0]?.id);
 
       // Create notification for test completion
       const passStatus = finalScore >= 70 ? 'passed' : 'failed';
       const emoji = finalScore >= 70 ? '🎉' : '📚';
       
-      console.log('🔔 Creating notification...');
       const notificationData = {
         user_id: user?.id,
         type: 'grade', // Valid enum: 'assignment', 'exam', 'grade', 'announcement', 'system'
@@ -201,9 +178,7 @@ const CBTTestPage = () => {
         read: false
       };
       
-      console.log('🔔 Notification data:', notificationData);
-      
-      const { data: notifData, error: notifError } = await supabase
+      const { error: notifError } = await supabase
         .from('notifications')
         .insert(notificationData)
         .select();
@@ -212,28 +187,12 @@ const CBTTestPage = () => {
         console.error('❌ Error creating notification:', notifError);
         console.error('❌ Notification error message:', notifError.message);
         console.error('❌ Notification error code:', notifError.code);
-      } else {
-        console.log('✅ Notification created successfully:', notifData);
       }
 
       // Dispatch event to refresh dashboard stats and charts
       window.dispatchEvent(new Event('testSubmitted'));
-      console.log('📊 Test submitted event dispatched');
 
       toast.success('Test submitted successfully!');
-      
-      // Navigate to results page
-      navigate('/cbt/results', {
-        state: {
-          score: finalScore,
-          correctCount,
-          totalQuestions: questions.length,
-          timeTaken,
-          questions,
-          userAnswers: answers,
-          course
-        }
-      });
     } catch (error: any) {
       console.error('Error saving test result:', error);
       toast.error('Test completed but failed to save results');
@@ -310,7 +269,26 @@ const CBTTestPage = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => navigate('/cbt/results', {
+                    state: {
+                      score,
+                      correctCount: Object.values(answers).filter((ans, idx) => ans === questions[idx]?.correct_answer).length,
+                      totalQuestions: questions.length,
+                      timeTaken: (timeLimit * 60) - timeLeft,
+                      questions,
+                      userAnswers: answers,
+                      course
+                    }
+                  })}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  View Results
+                </button>
                 <button
                   onClick={() => navigate('/cbt')}
                   className={`px-6 py-3 rounded-lg font-semibold ${isDarkMode ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
@@ -417,7 +395,9 @@ const CBTTestPage = () => {
                           onClick={() => handleAnswerSelect(option)}
                           className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                             isSelected
-                              ? 'border-primary-600 bg-primary-50'
+                              ? isDarkMode
+                                ? 'border-green-500 bg-green-900/30'
+                                : 'border-primary-600 bg-primary-50'
                               : isDarkMode
                               ? 'border-gray-700 bg-gray-700 hover:border-gray-600'
                               : 'border-gray-200 bg-gray-50 hover:border-gray-300'
@@ -426,14 +406,16 @@ const CBTTestPage = () => {
                           <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
                               isSelected
-                                ? 'bg-primary-600 text-white'
+                                ? isDarkMode
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-green-600 text-white'
                                 : isDarkMode
                                 ? 'bg-gray-600 text-gray-300'
                                 : 'bg-gray-200 text-gray-700'
                             }`}>
                               {option}
                             </div>
-                            <span className={isDarkMode ? 'text-gray-200' : 'text-gray-800'}>
+                            <span className={isDarkMode ? 'text-white' : 'text-gray-800'}>
                               {optionText}
                             </span>
                           </div>
@@ -471,7 +453,7 @@ const CBTTestPage = () => {
                   ) : (
                     <button
                       onClick={handleNextQuestion}
-                      className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700"
+                      className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-green-600 rounded-lg font-semibold hover:bg-primary-700"
                     >
                       Next
                       <ChevronRight size={20} />
@@ -497,7 +479,7 @@ const CBTTestPage = () => {
                       onClick={() => setCurrentQuestionIndex(index)}
                       className={`w-10 h-10 rounded-lg font-semibold text-sm ${
                         index === currentQuestionIndex
-                          ? 'bg-primary-600 text-white'
+                          ? 'bg-green-600 text-white'
                           : answers[index]
                           ? 'bg-green-500 text-white'
                           : isDarkMode
